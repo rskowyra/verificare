@@ -1,0 +1,73 @@
+/* -*-promela-*- 
+*for emacs promela mode
+* Created < 17-Feb-2007 
+* 
+* (C) David Farago <farago@kit.edu>
+* documentation: http://lfm.iti.kit.edu/files/theses/diploma/daDavidFarago.pdf
+*/ 
+
+#define N 4	           /* number of nodes $n$ */
+#define M 4             /* number of IDs = 0,..,M-1  */
+#define L 4	          /* size of FIFO-Buffers    */
+
+byte nr_leaders=0;
+typedef Msg {byte id; byte hop};
+chan q[N] = [L] of {Msg};
+
+proctype node (chan in, out)
+{
+  bool nodeActive = true, leader = false;
+  byte id;
+  Msg curMsg;
+     
+  xr in;
+  xs out;
+
+START: 	/* random ID */
+  id=0;
+  do
+    :: skip -> break
+    :: id < M-1 -> id++
+  od;
+
+  curMsg.id=id;
+  curMsg.hop=1;
+
+SEND_AND_RECEIVE:
+  out!curMsg;     
+
+endRECEIVE:
+  in?curMsg;
+
+/* check message */
+  if 
+    :: (!nodeActive) -> curMsg.hop++; goto SEND_AND_RECEIVE
+    :: else -> if 
+                 :: curMsg.hop<N ->
+                    if
+            	      :: (curMsg.id > id) ->
+                	   nodeActive=false; curMsg.hop++; 
+                           goto SEND_AND_RECEIVE
+                      :: (curMsg.id < id) ->
+                           goto endRECEIVE
+                      :: curMsg.id==id ->  
+                	   goto START
+                    fi
+                 :: curMsg.hop==N -> leader=true; 
+                      nr_leaders++; assert(nr_leaders==1)
+               fi
+  fi
+}
+
+init {
+  byte lv;
+  atomic {
+    lv=0;
+    do
+      :: lv < N -> run node(q[lv], q[(lv+1)%N]); lv++
+      :: lv==N -> break
+    od
+  }
+  timeout -> assert(nr_leaders==1); 
+  printf("Asserted: nr_leaders==1")
+}

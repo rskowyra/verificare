@@ -1,0 +1,64 @@
+/* -*-promela-*- 
+*for emacs promela mode
+* Created < 17-Feb-2007 
+* 
+* (C) David Farago <farago@kit.edu>
+* documentation: http://lfm.iti.kit.edu/files/theses/diploma/daDavidFarago.pdf
+*/ 
+
+#define N 5	       /* number of nodes $n$, prime */
+#define L 5	       /* size of FIFO-Buffers    */
+
+bool leader_exists = false; 
+chan q[N] = [L] of {bit}; 
+
+proctype node (chan in, out)
+{
+  bit vector[N]; 
+  byte index,sum;
+  
+  xr in;
+  xs out;
+
+START:
+  index=0;
+  sum=0;
+  if  /* random ID */
+    :: vector[index]=0
+    :: vector[index]=1
+  fi;
+
+  out!vector[index];
+  index++;
+  do
+    :: atomic{index<N-1 && nempty(in) -> in?vector[index]; 
+         out!vector[index]; index++}
+    :: atomic{index==N-1 && nempty(in) -> in?vector[index]; 
+         index++} 
+    :: index==N ->
+         do
+	   :: index>0 -> index--; sum=sum+vector[index]
+	   :: index==0 -> break
+	 od;
+	 if      /* for n prime: */
+	   :: sum==0 || sum==N  -> goto START /* periodic*/	
+	   :: else ->  leader_exists = true;  /*aperiodic*/
+                goto FINISH
+	 fi
+  od;
+FINISH:skip	    
+}
+
+init {
+  byte lv;
+  atomic {
+    lv=0;
+    do
+      :: lv < N -> run node(q[lv], q[(lv+1)%N]); lv++
+      :: lv==N -> break
+    od
+  }
+  timeout -> assert(leader_exists); 
+  printf("Asserted: some leader exists\n")
+}
+

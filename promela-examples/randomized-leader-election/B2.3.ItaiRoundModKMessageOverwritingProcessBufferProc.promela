@@ -1,0 +1,106 @@
+/* -*-promela-*- 
+*for emacs promela mode
+* Created < 17-Feb-2007 
+* 
+* (C) David Farago <farago@kit.edu>
+* documentation: http://lfm.iti.kit.edu/files/theses/diploma/daDavidFarago.pdf
+*/ 
+
+#define N 4	           /* number of nodes $n$ */
+#define K 2               /* rounds mod K=2       */
+#define M 4             /* number of IDs = 0,..,M-1  */
+
+byte nr_leaders=0;
+typedef Msg {byte round; byte id; byte hop; bool unique};
+chan preBuffer[N] = [1] of {Msg};        
+chan postBuffer[N] = [1] of {Msg};       
+
+proctype node (chan in, out)
+{
+  bool nodeActive = true, leader = false;
+  byte round,id;
+  Msg curMsg;
+
+  xr in;
+  xs out; 
+  
+START: 	/* random ID */
+  id=0;
+  do
+    :: skip -> break
+    :: id < M-1 -> id++
+  od;
+
+  curMsg.id=id;
+  curMsg.round=round;
+  curMsg.hop=1;
+  curMsg.unique=true;
+
+SEND_AND_RECEIVE:
+  out!curMsg;
+
+endRECEIVE:
+  in?curMsg; 
+  
+/* check message */
+  if
+    :: curMsg.hop<N ->
+       if
+	 :: (curMsg.round != round || curMsg.id > id) ->
+              round=curMsg.round; id=curMsg.id; nodeActive=false; 
+              curMsg.hop++; goto SEND_AND_RECEIVE
+	 :: curMsg.round == round && curMsg.id < id -> 
+              goto endRECEIVE
+	 :: curMsg.round==round && curMsg.id==id ->                            
+              curMsg.hop++; curMsg.unique=false; 
+              goto SEND_AND_RECEIVE
+         :: else -> 
+              printf("ERROR: hop<N and msg-cases not correct") 
+       fi
+    :: curMsg.hop==N -> 
+       if 
+         :: nodeActive && !curMsg.unique && round<K-1 -> 
+              round++; goto START
+         :: nodeActive && !curMsg.unique && round==K-1 -> 
+              round=0; goto START
+         :: nodeActive && curMsg.unique -> leader=true; 
+              nr_leaders++; assert(nr_leaders==1)
+         :: else -> printf("ERROR: hop=N and !nodeActive")
+       fi
+  fi
+}
+
+proctype bufferproc (chan in, out; pid next)
+{
+  Msg buffer;
+  bool bufferempty = true;
+
+  xr in;
+  xs out;
+  
+endvalid: 
+  do
+    :: in?buffer -> bufferempty = false;
+    :: bufferempty==false && node[next]@endRECEIVE -> 
+         out!buffer; bufferempty=true;   
+  od;
+}
+
+init {
+  byte lv;
+  pid currentnode;
+  atomic {
+    lv=N;
+    do
+      :: lv > 0 -> 
+           currentnode=run node(postBuffer[lv-1], 
+                                preBuffer[(lv)%N]); 
+           run bufferproc(preBuffer[lv-1],
+                          postBuffer[lv-1],currentnode);
+           lv--
+      :: lv==0 -> break
+    od
+  }
+  timeout -> assert(nr_leaders==1); 
+  printf("Asserted: nr_leaders==1\n")
+}

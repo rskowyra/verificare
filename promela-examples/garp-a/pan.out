@@ -1,0 +1,49 @@
+(Spin Version 2.9.3 -- 5 October 1996)
+	+ Partial Order Reduction
+
+Bit statespace search for:
+	never-claim         	- (not selected)
+	assertion violations	+
+	cycle checks       	- (disabled by -DSAFETY)
+	invalid endstates	+
+
+State-vector 108 byte, depth reached 903757, errors: 0
+6.3961e+06 states, stored
+1.1856e+07 states, matched
+1.82521e+07 transitions (= stored+matched)
+9.25748e+06 atomic steps
+3.9551e+06 lost messages
+hash factor: 5.24608 (best coverage if >100)
+(max size 2^25 states)
+
+7.18779e+08	equivalent memory usage in bytes (stored*vector + stack)
+5.75241e+07	actual memory usage
+
+unreached in proctype macuser
+	(0 of 7 states)
+unreached in proctype macuser1
+	(0 of 6 states)
+unreached in proctype llc
+	line 48, state 40, "-end-"
+	(1 of 40 states)
+unreached in proctype applicant
+	line 24, state 12, "assert(0)"
+	line 40, state 29, "assert(0)"
+	line 57, state 46, "assert(0)"
+	line 70, state 60, "assert(0)"
+	line 86, state 76, "assert(0)"
+	line 90, state 82, "-end-"
+	(6 of 82 states)
+unreached in proctype registrar
+	line 27, state 15, "assert(0)"
+	line 39, state 28, "assert(0)"
+	line 54, state 43, "assert(0)"
+	line 57, state 49, "-end-"
+	(4 of 49 states)
+unreached in proctype leaveallpro
+	line 19, state 8, "-end-"
+	(1 of 8 states)
+unreached in proctype :init:
+	(0 of 9 states)
+444.90user 3.31system 10:52.33elapsed 68%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+0minor)pagefaults 0swaps

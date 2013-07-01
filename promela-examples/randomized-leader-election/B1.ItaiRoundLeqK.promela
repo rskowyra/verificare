@@ -1,0 +1,87 @@
+/* -*-promela-*- 
+*for emacs promela mode
+* Created < 17-Feb-2007 
+* 
+* (C) David Farago <farago@kit.edu>
+* documentation: http://lfm.iti.kit.edu/files/theses/diploma/daDavidFarago.pdf
+*/ 
+
+#define N 7	           /* number of nodes $n$ */
+#define K 4               /* number of rounds      */
+#define M 7             /* number of IDs (= 0,..,M-1)  */
+#define L 7	          /* size of FIFO-Buffers      */
+
+byte nr_leaders=0;
+bool limitReached=false;
+typedef Msg {byte round; byte id; byte hop; bool unique};
+chan q[N] = [L] of {Msg};
+
+proctype node (chan in, out)
+{
+  bool nodeActive = true, leader = false;
+  byte round, id;
+  Msg curMsg; 
+      
+  xr in;
+  xs out;
+
+START:  /*random ID */
+  id=0;
+  do
+    :: skip -> break
+    :: id < M-1 -> id++
+  od;
+
+  curMsg.id=id;
+  curMsg.round=round;
+  curMsg.hop=1;
+  curMsg.unique=true;
+
+SEND_AND_RECEIVE:
+  out!curMsg;      
+
+endRECEIVE: 
+  in?curMsg;
+
+/* check message */
+  if
+    :: curMsg.hop<N ->
+       if
+	 :: (curMsg.round > round) || 
+            (curMsg.round == round && curMsg.id > id) -> 
+	      round=curMsg.round; id=curMsg.id; nodeActive=false; 
+              curMsg.hop++; goto SEND_AND_RECEIVE
+	 :: curMsg.round < round || 
+            (curMsg.round == round && curMsg.id < id) -> 
+       	      goto endRECEIVE
+	 :: curMsg.round==round && curMsg.id==id ->                            
+	      curMsg.hop++;curMsg.unique=false; 
+              goto SEND_AND_RECEIVE
+         :: else -> 
+              printf("ERROR: hop<N and message-cases not correct") 
+       fi
+    :: curMsg.hop==N -> 
+       if 
+         :: nodeActive && !curMsg.unique && round<K -> 
+              round++;goto START
+         :: nodeActive && !curMsg.unique && round==K ->
+              limitReached=true;printf("Round-Limit reached")
+         :: nodeActive && curMsg.unique -> 
+              leader=true; nr_leaders++; assert(nr_leaders==1)
+         :: else -> printf("ERROR: hop=N and !nodeActive")
+       fi
+  fi
+}
+
+init {
+  byte lv;
+  atomic {
+    lv=0;
+    do
+      :: lv < N -> run node(q[lv], q[(lv+1)%N]); lv++
+      :: lv==N -> break
+    od
+  }
+  timeout -> assert(nr_leaders==1 || limitReached); 
+  printf("Asserted: exactly one leader or limit reached\n") 
+}

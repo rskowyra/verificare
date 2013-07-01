@@ -1,0 +1,23 @@
+/*
+ * PROMELA Validation Model
+ * GARP(main)
+ */
+
+#include "defines"
+#include "macuser"
+#include "macuser1"
+#include "llc"
+#include "applicant"
+#include "registrar"
+#include "leaveall"
+
+init
+{	atomic {
+	  run macuser(0); run macuser1(1);
+	  run llc();
+	  run applicant(0); run applicant(1);
+	  run registrar(0);
+	  run leaveallpro(0)
+	}
+}
+
