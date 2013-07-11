@@ -5,6 +5,10 @@ type Variable = String
 type Constant = String
 type Datatype = String
 
+data Init =
+    Init
+  deriving (Eq, Show)
+
 data Top =
     Top [Proctype] Init
   deriving (Eq, Show)
@@ -14,8 +18,8 @@ data Proctype =
   deriving (Eq, Show)
 
 data Arg = 
-	Arg Datatype Variable
-	deriving(Eq, Show)
+    Arg Datatype Variable
+    deriving(Eq, Show)
 
 data Stmt =
     Goto String
@@ -28,11 +32,13 @@ data Stmt =
   deriving (Eq, Show)
 
 data ChannelOp = 
-	Send Variable [Term]
+    Send Variable [Term]
   | Recv Variable [Variable]
   deriving (Eq, Show)
   
-data GuardedBlock = GuardedBlock Formula [Stmt]
+data GuardedBlock = 
+    GuardedBlock Formula [Stmt]
+  deriving (Eq, Show)
   
 data Formula =
     And Formula Formula

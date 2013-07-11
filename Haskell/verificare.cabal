@@ -1,0 +1,30 @@
+Name:              verificare
+Version:           0.0.0.1
+Cabal-Version:     >= 1.6
+
+
+Synopsis:          Boston University Verificare Project.
+Description:       Boston University Verificare Project.
+
+
+
+Build-Type:        Simple
+
+Library
+  Exposed-Modules: Language.VML.AbstractSyntax,
+                   Language.VML.Parse,
+                   Language.Promela.AbstractSyntax, 
+                   Language.Promela.Parse
+  Build-Depends:   base >= 3 && < 5, MissingH, transformers, 
+                   split, parsec, indents,
+                   compilation, ascetic, uxadt, richreports, imparse
+
+Executable verificare
+  Main-Is:         Main.hs
+  Build-Depends:   base >= 3 && < 5, MissingH, transformers, 
+                   split, parsec, indents,
+                   compilation, ascetic, uxadt, richreports, imparse
+
+Source-Repository head
+  Type:            git
+  Location:        https://github.com/rskowyra/verificare
