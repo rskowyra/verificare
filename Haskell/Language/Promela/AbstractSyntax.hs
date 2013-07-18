@@ -5,26 +5,46 @@ type Variable = String
 type Constant = String
 type Datatype = String
 
+data Top =
+    Top [GlobalDecl] [Proctype] Init
+  deriving (Eq, Show)
+
+data GlobalDecl =
+    Typedef Variable [Decl]
+  | GlobalDecl Decl
+  deriving (Eq, Show)
+  
 data Init =
     Init
   deriving (Eq, Show)
-
-data Top =
-    Top [Proctype] Init
-  deriving (Eq, Show)
   
 data Proctype =
-    Proctype String [Arg] [Stmt]
+    Proctype String [Arg] [Decl] [Stmt]
   deriving (Eq, Show)
 
+data Decl =
+    Decl Ty Variable (Maybe Term)
+  deriving (Eq, Show)
+
+data Ty =
+    TyInt
+  | TyDef Variable
+  | TyArray Integer Ty
+  | TyChannel Integer Ty
+  deriving (Eq, Show)
+  
 data Arg = 
     Arg Datatype Variable
-    deriving(Eq, Show)
+  deriving (Eq, Show)
 
+data LHS =
+    LHS Variable [Term]
+  deriving (Eq, Show)
+  
 data Stmt =
     Goto String
   | Skip
-  | Assign Variable Term
+  | Assign LHS Term
   | If [GuardedBlock]
   | Do [GuardedBlock]
   | COStmt ChannelOp
@@ -41,7 +61,8 @@ data GuardedBlock =
   deriving (Eq, Show)
   
 data Formula =
-    And Formula Formula
+    B Bool
+  | And Formula Formula
   | Or Formula Formula
   | Not Formula
   | Eq Term Term
@@ -53,8 +74,9 @@ data Formula =
   deriving (Eq, Show)
 
 data Term =
-    V Variable
-  | N Integer
+    N Integer
+  | V Variable
+  | Index Term Term
   | Neg Term
   | Plus Term Term
   | Minus Term Term

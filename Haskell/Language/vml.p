@@ -1,16 +1,16 @@
 
 Top ::=
   Top | `[Host/1]
-  
+
 Host ::=
-  Host | `Variable `[Stmt/1]
+  Host | `Variable : `>[Stmt/1]<
 
 Stmt ::=
-     Skip | `_ skip
-   Assign | `_ `Variable := `Term
-   Invoke | `_ `Action
-       If | `_ if `Formula : `>[Stmt/1]<
-     Loop | `_ loop : `>[Stmt/1]<
+     Skip | skip
+   Assign | `Variable := `Term
+   Invoke | `Action
+       If | if `Formula : `>[Stmt/1]<
+     Loop | loop : `>[Stmt/1]<
 
 Action ::=
   Action | `Variable `Variable ( `[Constant/0/,] )
@@ -18,27 +18,33 @@ Action ::=
 Formula ::=
   And | `Formula && `Formula
    Or | `Formula || `Formula
+      ^
   Not | ! `Formula
-   Eq | `Formula == `Formula
-  Neq | `Formula !=  `Formula
-   Lt | `Formula <  `Formula
-  Leq | `Formula <= `Formula
-   Gt | `Formula >  `Formula
-  Geq | `Formula >= `Formula
-   In | `Formula in `Formula
-     
+      ^
+   Eq | `Term == `Term
+  Neq | `Term !=  `Term
+   Lt | `Term <  `Term
+  Leq | `Term <= `Term
+   Gt | `Term >  `Term
+  Geq | `Term >= `Term
+   In | `Term in `Term
+
 Term ::=
-      V | Variable
+      V | `Variable
       N | `{[0-9]+}
-    Neg | - `Term
+        ^
    Plus | `Term + `Term
   Minus | `Term - `Term
+        ^
    Mult | `Term * `Term
     Div | `Term / `Term
+        ^
     Pow | `Term ^ `Term
+        ^
+    Neg | - `Term
 
 Variable ::=
-        | `{[A-Za-z][A-Za-z0-9_]+}
-        
+  Variable | `{[A-Za-z][A-Za-z0-9_]+}
+
 Constant ::=
-        | `{[A-Z][A-Z0-9]+}
+  Constant | `{[A-Z][A-Z0-9]+}

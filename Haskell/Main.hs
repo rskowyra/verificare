@@ -12,6 +12,8 @@ import System.IO
 import Language.VML.AbstractSyntax
 import Language.VML.Parse (parseString)
 
+import qualified VMLToPromela as VToP (top)
+
 ----------------------------------------------------------------
 -- The target of the output, as specified by the command-line
 -- arguments.
@@ -47,7 +49,7 @@ parse str =
 ----------------------------------------------------------------
 -- Abstract syntax to LTS.
 
-
+{-
 data LTSState =
     LTSState Integer
   deriving (Eq, Show)
@@ -110,7 +112,7 @@ test a =
      
 
 
-  
+
 data LTS = LTS (Maybe String) [(Action, (LTSState, LTSState))]
   deriving (Eq, Show)
 
@@ -154,7 +156,7 @@ convertStmt' s = case s of
     
     {-  If f stmts -> foldr compose (LTS Nothing []) [convertStmt' s | s <- stmts]
  -} --Loop stmts -> foldr compose (LTS Nothing []) [convertStmt' s | s <- stmts]
-
+-}
 
   ----------------------------------------------------------------
 -- Take a file path in the form of a string, read it, and
@@ -172,9 +174,9 @@ procWrite outs fname =
          Nothing -> return ()
          Just top ->
            do { fname <- return $ fileNamePrefix fname
-              ; putStr $ show top
+              ; putStr $ show $ VToP.top top
               ; putStr "\n"
-              ; putStr $ show (extract $ convertTop' top)
+              -- ; putStr $ show (extract $ convertTop' top)
               ; putStr "\n"
               }
      }
