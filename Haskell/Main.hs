@@ -9,10 +9,11 @@ import Text.ParserCombinators.Parsec (ParseError)
 import System.Environment (getArgs)
 import System.IO
 
-import Language.VML.AbstractSyntax
-import Language.VML.Parse (parseString)
+import qualified Language.VML.AbstractSyntax as VA
+import qualified Language.VML.Parse as VP (parseString)
+import qualified Language.VML.Report as VR
 
-import qualified VMLToPromela as VToP (top)
+--import qualified VMLToPromela as VToP (top)
 
 ----------------------------------------------------------------
 -- The target of the output, as specified by the command-line
@@ -29,7 +30,7 @@ data OutputTarget =
 parseShow :: String -> IO ()
 parseShow fname =
   do { s <- readFile fname
-     ; r <- return $ parseString s
+     ; r <- return $ VP.parseString s
      ; case r of
          Left err -> do { putStr "parse error: "; print (err :: ParseError) }
          Right prgm ->
@@ -37,12 +38,12 @@ parseShow fname =
               }
      }
 
-parse :: String -> IO (Maybe Top)
+parse :: String -> IO (Maybe VA.Root)
 parse str =
-  do { r <- return $ parseString str
+  do { r <- return $ VP.parseString str
      ; case r of
          Left err -> do { putStr "parse error: "; print (err :: ParseError) ; return Nothing }
-         Right top -> return $ Just top
+         Right root -> return $ Just root
      }
 
 
@@ -174,7 +175,7 @@ procWrite outs fname =
          Nothing -> return ()
          Just top ->
            do { fname <- return $ fileNamePrefix fname
-              ; putStr $ show $ VToP.top top
+              -- ; putStr $ show $ VToP.top top
               ; putStr "\n"
               -- ; putStr $ show (extract $ convertTop' top)
               ; putStr "\n"

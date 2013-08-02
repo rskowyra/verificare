@@ -1,6 +1,9 @@
+-- This module generated automatically by imparse.
 
-module Language.VML.Parse (parseString)
+module Language.VML.Parse
   where
+
+import Language.VML.AbstractSyntax
 
 ----------------------------------------------------------------
 -- Parser to convert concrete syntax to abstract syntax.
@@ -15,123 +18,29 @@ import qualified Text.ParserCombinators.Parsec.Prim as Prim
 import Control.Monad.Trans.State.Lazy (StateT)
 import Data.Functor.Identity (Identity)
 
-import Language.VML.AbstractSyntax
+----------------------------------------------------------------
+-- Parsing functions to export.
+
+parseString :: String -> Either ParseError Root
+parseString s = PI.runIndent "" $ runParserT root () "" s
 
 ----------------------------------------------------------------
--- Exported functions.
-
-parseString :: String -> Either ParseError Top
-parseString s = PI.runIndent "" $ runParserT topP () "" s
-
-----------------------------------------------------------------
--- Top-level parser.
+-- Parser state.
 
 type ParseState = StateT SourcePos Identity
 type ParseFor a = ParsecT [Char] () ParseState a
-
-topP :: ParseFor Top
-topP = do { whiteSpace ; hs <- many1 hostP ; eof ; return $ Top hs }
-
-hostP :: ParseFor Host
-hostP = withIndent (do { res "host" ; h <- con ; return h }) stmtP (\_ -> Host "h" [])
-
-----------------------------------------------------------------
--- Statement parser.
-
-stmtP :: ParseFor Stmt
-stmtP = (
-         do { res "skip" ; return Skip }
-    <?|> do { v <- var ; rO ":=" ; t <- termP ; return $ Assign v t }
-    <?|> do { a <- actionP ; return $ Invoke a }
-    <?|> withIndent (do { res "if" ; f <- formulaP ; rO ":" ; return f}) stmtP If
-    <?|> withIndent (do { res "loop:" }) stmtP (\_ -> Loop)
-  ) <?> "statement"
-
-actionP :: ParseFor Action
-actionP =
-  do { inst <- var 
-     ; rO "."  
-     ; act <- var
-     ; args <- parens (sepBy caps commaSep)
-     ; return $ Action inst act args
-     }
-  <?> "action"
-
-formulaP :: ParseFor Formula
-formulaP = PE.buildExpressionParser formulaOps formulaAtomP <?> "formula"
-
-formulaOps :: PE.OperatorTable String () ParseState Formula
-formulaOps =
-  [ [ prefix "!" Not
-    ]
-  , [ binary "&&" And PE.AssocLeft
-    , binary "||" Or PE.AssocLeft 
-    ]
-  ]
-
-formulaAtomP :: ParseFor Formula
-formulaAtomP =
-      do { t1 <- termP ; op <- relOpP ; t2 <- termP ; return $ op t1 t2 }
-  <|> parens formulaP
-
-relOpP :: ParseFor (Term -> Term -> Formula)
-relOpP = (
-      do { rO "=="; return Eq }
-  <|> do { rO "!="; return Neq }
-  <|> do { rO "<";  return Lt }
-  <|> do { rO "<="; return Leq }
-  <|> do { rO ">";  return Gt }
-  <|> do { rO ">="; return Geq }
-  <|> do { rO "in"; return In }
-  ) <?> "term relational operator"
-
-termP :: ParseFor Term
-termP = PE.buildExpressionParser termOps termAtomP <?> "term"
-
-termOps :: PE.OperatorTable String () ParseState Term
-termOps =
-  [ [ prefix "-" Neg
-    ]
-  , [ binary "^" Pow PE.AssocLeft
-    ]
-  , [ binary "*" Mult PE.AssocLeft
-    , binary "/" Div PE.AssocLeft 
-    ]
-  , [ binary "+" Plus PE.AssocLeft
-    , binary "-" Minus PE.AssocLeft 
-    ]
-  ]
-
-termAtomP :: ParseFor Term
-termAtomP =
-      intP
-  <|> varP
-  <|> parens termP
-
-varP :: ParseFor Term
-varP = do { v <- var; return $ V v } <?> "variable"
-
-intP :: ParseFor Term
-intP = do { n <- natural; return $ N n } <?> "integer"
 
 ----------------------------------------------------------------
 -- Parsec-specific configuration definitions and synonyms.
 
 langDef :: PL.GenLanguageDef String () ParseState
 langDef = PL.javaStyle
-  { PL.identStart        = oneOf "abcdefghijkmlnopqrstuvwxyz_" -- Only lowercase.
+  { PL.identStart        = oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkmlnopqrstuvwxyz_" -- Only lowercase.
   , PL.identLetter       = alphaNum <|> oneOf "_'"
   , PL.opStart           = PL.opLetter langDef
-  , PL.opLetter          = oneOf "+*=&|:\\[]()"
-  , PL.reservedOpNames   = [ "+", "-", "*", "/", "^"
-                           , "==", "!=", "<", ">", "<=", ">="
-                           , "in"
-                           , ".", ",", ":="
-                           ]
-  , PL.reservedNames     = [ "host"
-                           , "loop", "if"
-                           , "skip"
-                           ]
+  , PL.opLetter          = oneOf ""
+  , PL.reservedOpNames   = [ ]
+  , PL.reservedNames     = [ ]
   , PL.commentLine       = "#"
   }
 
@@ -140,23 +49,71 @@ lang = PT.makeTokenParser langDef
 
 whiteSpace = PT.whiteSpace lang
 symbol     = PT.symbol lang
-var        = PT.identifier lang
 rO         = PT.reservedOp lang
 res        = PT.reserved lang
+identifier = PT.identifier lang
 natural    = PT.natural lang
-parens p   = between (symbol "(") (symbol ")") p
-bracks p   = between (symbol "[") (symbol "]") p
-bars   p   = between (symbol "|") (symbol "|") p
-commaSep   = skipMany1 (symbol ",")
 
 binary name f assoc = PE.Infix (do{PT.reservedOp lang name; return f}) assoc
 prefix name f       = PE.Prefix (do{PT.reservedOp lang name; return f})
 
 withIndent p1 p2 f = PI.withBlock f p1 p2
 
-con = do { c <- oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ; cs <- option "" var ; return $ c:cs }
-caps = do { cs <- many1 (oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZ") ; return cs }
+con :: ParseFor String
+con = do { c <- oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ; cs <- option "" identifier ; return $ c:cs }
+
+flag :: ParseFor String
+flag = do { cs <- many1 (oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZ") ; return cs }
+-- caps = do { cs <- many1 (oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZ") ; return cs }
 
 (<?|>) p1 p2 = (try p1) <|> p2
 
+----------------------------------------------------------------
+-- Parser definition.
+
+root = do { whiteSpace ; r <- pRoot ; eof ; return r }
+
+pRoot = do {v0 <- many1 pHost; return $ Root v0}
+  
+pHost = withIndent (do {v0 <- identifier; res ":"; return $ (v0)}) pStmt (\(v0) vs -> Host v0 vs)
+  
+pTy =
+      do {res "int"; return $ TyInt }
+  <|> do {res "set"; res "<"; v2 <- pTy; res ">"; return $ TySet v2}
+  <|> do {res "array"; res "<"; v2 <- pTy; res ">"; return $ TyArray v2}
+  
+pStmt =
+      do {v0 <- pTy; v1 <- identifier; res "="; v3 <- pTerm; return $ Decl v0 v1 v3}
+  <|> do {res "skip"; return $ Skip }
+  <|> do {v0 <- identifier; res "."; v2 <- identifier; res "("; v4 <- sepBy pConstant (res " ++ sep ++ "); res ")"; return $ Action v0 v2 v4}
+  <|> do {v0 <- identifier; res ":="; v2 <- pTerm; return $ Assign v0 v2}
+  <|> withIndent (do {res "loop"; res ":"; return $ ()}) pStmt (\() vs -> Loop  vs)
+  <|> withIndent (do {res "if"; v1 <- pFormula; res ":"; return $ (v1)}) pStmt (\(v1) vs -> If v1 vs)
+  
+pFormula =
+      do {res "not"; v1 <- pFormula; return $ Not v1}
+  <|> do {v0 <- pFormula; res "and"; v2 <- pFormula; return $ And v0 v2}
+  <|> do {v0 <- pFormula; res "or"; v2 <- pFormula; return $ Or v0 v2}
+  <|> do {res "true"; return $ T }
+  <|> do {res "false"; return $ F }
+  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Eq v0 v2}
+  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Neq v0 v2}
+  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Lt v0 v2}
+  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Leq v0 v2}
+  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Gt v0 v2}
+  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Geq v0 v2}
+  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ In v0 v2}
+  
+pTerm = PE.buildExpressionParser [[binary "*" Mult PE.AssocLeft,binary "/" Div PE.AssocLeft,binary "^" Pow PE.AssocLeft],[binary "+" Plus PE.AssocLeft,binary "-" Minus PE.AssocLeft],[prefix "-" Neg]] (
+      do {res "["; v1 <- sepBy pTerm (res " ++ sep ++ "); res "]"; return $ Array v1}
+  <|> do {res "{"; v1 <- sepBy pTerm (res " ++ sep ++ "); res "}"; return $ Set v1}
+  <|> do {v0 <- identifier; v1 <- many pSpec; return $ V v0 v1}
+  <|> do {v0 <- natural; return $ N v0}
+  )
+pSpec =
+      do {res "["; v1 <- pTerm; res "]"; return $ Index v1}
+  <|> do {res "."; v1 <- identifier; return $ Field v1}
+  
+pConstant = do {v0 <- identifier; return $ C v0}
+  
 --eof
