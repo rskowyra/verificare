@@ -1,9 +1,9 @@
 
 Root ::=
-  Root | `[Host/1]
+  Root | `[Host]
 
 Host ::=
-  Host | `id : `>[Stmt/1]<
+  Host | `var : `>>[Stmt]<<
 
 Ty ::=
     TyInt | int
@@ -11,12 +11,12 @@ Ty ::=
   TyArray | array < `Ty >
 
 Stmt ::=
-    Decl | `Ty `id = `Term
+    Decl | `Ty `var = `Term
     Skip | skip
-  Action | `id . `id ( `[Constant/0/,] )
-  Assign | `id := `Term
-    Loop | loop : `>[Stmt/1]<
-      If | if `Formula : `>[Stmt/1]<
+  Action | `var . `var ( `([Constant/,]) )
+  Assign | `var := `Term
+    Loop | loop : `>>[Stmt]<<
+      If | if `Formula : `>>[Stmt]<<
 
 Formula ::=
     Not | not `Formula
@@ -24,8 +24,6 @@ Formula ::=
     And | `Formula and `Formula
      Or | `Formula or `Formula
         ^
-      T | true
-      F | false
      Eq | `Term in `Term
     Neq | `Term in `Term
      Lt | `Term in `Term
@@ -33,6 +31,8 @@ Formula ::=
      Gt | `Term in `Term
     Geq | `Term in `Term
      In | `Term in `Term
+      T | true
+      F | false
 
 Term ::=
    Mult | `Term * `Term
@@ -44,14 +44,14 @@ Term ::=
         ^
     Neg | - `Term
         ^
-  Array | [ `[Term/0/,] ]
-    Set | { `[Term/0/,] }
-      V | `id `[Spec/0]
+  Array | [ `([Term/,]) ]
+    Set | { `([Term/,]) }
+      V | `var `([Spec])
       N | `#
 
 Spec ::=
   Index | [ `Term ]
-  Field | . `id
+  Field | . `var
 
 Constant ::=
-      C | `id
+      C | `flag

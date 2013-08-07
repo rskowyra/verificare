@@ -30,8 +30,6 @@ data Formula =
     Not  Formula
   | And Formula  Formula
   | Or Formula  Formula
-  | T 
-  | F 
   | Eq Term  Term
   | Neq Term  Term
   | Lt Term  Term
@@ -39,6 +37,8 @@ data Formula =
   | Gt Term  Term
   | Geq Term  Term
   | In Term  Term
+  | T 
+  | F 
   deriving (Show, Eq)
 
 data Term = 

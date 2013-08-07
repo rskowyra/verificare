@@ -60,6 +60,7 @@ data Term =
   | Pow Term Term
   | Array [Term]
   | Set [Term]
+  | Len Term
   deriving (Eq, Show)
 
 --eof

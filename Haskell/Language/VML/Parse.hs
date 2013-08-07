@@ -85,28 +85,25 @@ pTy =
 pStmt =
       do {v0 <- pTy; v1 <- identifier; res "="; v3 <- pTerm; return $ Decl v0 v1 v3}
   <|> do {res "skip"; return $ Skip }
-  <|> do {v0 <- identifier; res "."; v2 <- identifier; res "("; v4 <- sepBy pConstant (res " ++ sep ++ "); res ")"; return $ Action v0 v2 v4}
+  <|> do {v0 <- identifier; res "."; v2 <- identifier; res "("; v4 <- sepBy pConstant (res ","); res ")"; return $ Action v0 v2 v4}
   <|> do {v0 <- identifier; res ":="; v2 <- pTerm; return $ Assign v0 v2}
   <|> withIndent (do {res "loop"; res ":"; return $ ()}) pStmt (\() vs -> Loop  vs)
   <|> withIndent (do {res "if"; v1 <- pFormula; res ":"; return $ (v1)}) pStmt (\(v1) vs -> If v1 vs)
   
-pFormula =
-      do {res "not"; v1 <- pFormula; return $ Not v1}
-  <|> do {v0 <- pFormula; res "and"; v2 <- pFormula; return $ And v0 v2}
-  <|> do {v0 <- pFormula; res "or"; v2 <- pFormula; return $ Or v0 v2}
-  <|> do {res "true"; return $ T }
-  <|> do {res "false"; return $ F }
-  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Eq v0 v2}
+pFormula = PE.buildExpressionParser [[prefix "not" Not],[binary "and" And PE.AssocLeft,binary "or" Or PE.AssocLeft]] (
+      do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Eq v0 v2}
   <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Neq v0 v2}
   <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Lt v0 v2}
   <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Leq v0 v2}
   <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Gt v0 v2}
   <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ Geq v0 v2}
   <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ In v0 v2}
-  
+  <|> do {res "true"; return $ T }
+  <|> do {res "false"; return $ F }
+  )
 pTerm = PE.buildExpressionParser [[binary "*" Mult PE.AssocLeft,binary "/" Div PE.AssocLeft,binary "^" Pow PE.AssocLeft],[binary "+" Plus PE.AssocLeft,binary "-" Minus PE.AssocLeft],[prefix "-" Neg]] (
-      do {res "["; v1 <- sepBy pTerm (res " ++ sep ++ "); res "]"; return $ Array v1}
-  <|> do {res "{"; v1 <- sepBy pTerm (res " ++ sep ++ "); res "}"; return $ Set v1}
+      do {res "["; v1 <- sepBy pTerm (res ","); res "]"; return $ Array v1}
+  <|> do {res "{"; v1 <- sepBy pTerm (res ","); res "}"; return $ Set v1}
   <|> do {v0 <- identifier; v1 <- many pSpec; return $ V v0 v1}
   <|> do {v0 <- natural; return $ N v0}
   )
@@ -114,6 +111,6 @@ pSpec =
       do {res "["; v1 <- pTerm; res "]"; return $ Index v1}
   <|> do {res "."; v1 <- identifier; return $ Field v1}
   
-pConstant = do {v0 <- identifier; return $ C v0}
+pConstant = do {v0 <- flag; return $ C v0}
   
 --eof

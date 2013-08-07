@@ -1,89 +1,101 @@
+-- This module generated automatically by imparse.
+
 module Language.Promela.AbstractSyntax
   where
 
-type Variable = String
-type Constant = String
-type Datatype = String
+data Root = 
+    Root [GlobalDecl] [ProcType] Init
+  deriving (Show, Eq)
 
-data Top =
-    Top [GlobalDecl] [Proctype] Init
-  deriving (Eq, Show)
-
-data GlobalDecl =
-    Typedef Variable [Decl]
+data GlobalDecl = 
+    Typedef  String  [Decl]
   | GlobalDecl Decl
-  deriving (Eq, Show)
-  
-data Init =
-    Init
-  deriving (Eq, Show)
-  
-data Proctype =
-    Proctype String [Arg] [Decl] [Stmt]
-  deriving (Eq, Show)
+  deriving (Show, Eq)
 
-data Decl =
-    Decl Ty Variable (Maybe Term)
-  deriving (Eq, Show)
+data Init = 
+    Init 
+  deriving (Show, Eq)
 
-data Ty =
-    TyInt
-  | TyDef Variable
-  | TyArray Integer Ty
-  | TyChannel Integer Ty
-  deriving (Eq, Show)
-  
-data Arg = 
-    Arg Datatype Variable
-  deriving (Eq, Show)
+data Proctype = 
+    Proctype  String [Arg]  [Decl]  [Stmt] 
+  deriving (Show, Eq)
 
-data LHS =
-    LHS Variable [Term]
-  deriving (Eq, Show)
-  
-data Stmt =
-    Goto String
-  | Skip
-  | Assign LHS Term
-  | If [GuardedBlock]
-  | Do [GuardedBlock]
-  | COStmt ChannelOp
-  | Atomic [Stmt]
-  deriving (Eq, Show)
+data Decl = 
+    Decl Ty String (Maybe RHS)
+  deriving (Show, Eq)
+
+data RHS = 
+    RHS  Term
+  deriving (Show, Eq)
+
+data Ty = 
+    TyInt 
+  | TyDef String
+  | TyArray     Ty 
+  | TyChannel     Ty 
+  | Goto  String
+  | Skip 
+  | Assign LHS  Term
+  | If  GuardedBlock
+  | Do  GuardedBlock
+  | COpT ChannelOp
+  | Atomic  [Stmt]
+  deriving (Show, Eq)
+
+data LHS = 
+    LHS String [Spec]
+  deriving (Show, Eq)
+
+data GuardedBlock = 
+    GuardedBlock  Formula    [Stmt] 
+  deriving (Show, Eq)
+
+data Formula = 
+    Not  Formula
+  | And Formula  Formula
+  | Or Formula  Formula
+  | Eq Term  Term
+  | Neq Term  Term
+  | Lt Term  Term
+  | Leq Term  Term
+  | Gt Term  Term
+  | Geq Term  Term
+  | In Term  Term
+  | T 
+  | F 
+  deriving (Show, Eq)
+
+data Term = 
+    Mult Term  Term
+  | Div Term  Term
+  | Pow Term  Term
+  | Plus Term  Term
+  | Minus Term  Term
+  | Neg  Term
+  | Array  [Term] 
+  | Set  [Term] 
+  | V String [Spec]
+  | N Integer
+  | COpT ChannelOp
+  deriving (Show, Eq)
 
 data ChannelOp = 
-    Send Variable [Term]
-  | Recv Variable [Variable]
-  deriving (Eq, Show)
-  
-data GuardedBlock = 
-    GuardedBlock Formula [Stmt]
-  deriving (Eq, Show)
-  
-data Formula =
-    B Bool
-  | And Formula Formula
-  | Or Formula Formula
-  | Not Formula
-  | Eq Term Term
-  | Neq Term Term
-  | Lt Term Term
-  | Leq Term Term
-  | Gt Term Term
-  | Geq Term Term
-  deriving (Eq, Show)
+    Send  String  [Term] 
+  | Recv  String  [Variable] 
+  deriving (Show, Eq)
 
-data Term =
-    N Integer
-  | V Variable
-  | Index Term Term
-  | Neg Term
-  | Plus Term Term
-  | Minus Term Term
-  | Mult Term Term
-  | Div Term Term
-  | Pow Term Term
-  | COTerm ChannelOp
-  deriving (Eq, Show)
+data Variable = 
+    Variable String
+  deriving (Show, Eq)
+
+data Spec = 
+    Index  Term 
+  | Field  String
+  deriving (Show, Eq)
+
+data Constant = 
+    C String
+  deriving (Show, Eq)
+
 
 --eof

@@ -35,8 +35,6 @@ instance R.ToReport Formula where
     Not v1 -> R.Span [] [] $ [R.key "not", R.report v1]
     And v0 v2 -> R.Span [] [] $ [R.report v0, R.key "and", R.report v2]
     Or v0 v2 -> R.Span [] [] $ [R.report v0, R.key "or", R.report v2]
-    T  -> R.Span [] [] $ [R.key "true"]
-    F  -> R.Span [] [] $ [R.key "false"]
     Eq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
     Neq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
     Lt v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
@@ -44,6 +42,8 @@ instance R.ToReport Formula where
     Gt v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
     Geq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
     In v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
+    T  -> R.Span [] [] $ [R.key "true"]
+    F  -> R.Span [] [] $ [R.key "false"]
     
 instance R.ToReport Term where
   report x = case x of
@@ -65,7 +65,7 @@ instance R.ToReport Spec where
     
 instance R.ToReport Constant where
   report x = case x of
-    C v0 -> R.Span [] [] $ [R.var v0]
+    C v0 -> R.Span [] [] $ [R.Text v0]
     
 
 --eof
