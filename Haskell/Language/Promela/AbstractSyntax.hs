@@ -16,8 +16,12 @@ data Init =
     Init 
   deriving (Show, Eq)
 
-data Proctype = 
+data ProcType = 
     Proctype  String [Arg]  [Decl]  [Stmt] 
+  deriving (Show, Eq)
+
+data Arg = 
+    Arg Ty String
   deriving (Show, Eq)
 
 data Decl = 
@@ -33,12 +37,15 @@ data Ty =
   | TyDef String
   | TyArray     Ty 
   | TyChannel     Ty 
-  | Goto  String
+  deriving (Show, Eq)
+
+data Stmt = 
+    Goto  String
   | Skip 
   | Assign LHS  Term
   | If  GuardedBlock
   | Do  GuardedBlock
-  | COpT ChannelOp
+  | COpS ChannelOp
   | Atomic  [Stmt]
   deriving (Show, Eq)
 

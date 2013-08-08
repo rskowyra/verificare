@@ -8,7 +8,7 @@ data Root =
   deriving (Show, Eq)
 
 data Host = 
-    Host String  [Stmt]
+    Host  String  [Stmt]
   deriving (Show, Eq)
 
 data Ty = 

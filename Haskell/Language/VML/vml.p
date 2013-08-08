@@ -3,7 +3,7 @@ Root ::=
   Root | `[Host]
 
 Host ::=
-  Host | `var : `>>[Stmt]<<
+  Host | host `var : `>>([Decl])<< `>>[Stmt]<<
 
 Ty ::=
     TyInt | int
@@ -24,12 +24,12 @@ Formula ::=
     And | `Formula and `Formula
      Or | `Formula or `Formula
         ^
-     Eq | `Term in `Term
-    Neq | `Term in `Term
-     Lt | `Term in `Term
-    Leq | `Term in `Term
-     Gt | `Term in `Term
-    Geq | `Term in `Term
+     Eq | `Term == `Term
+    Neq | `Term != `Term
+     Lt | `Term <  `Term
+    Leq | `Term <= `Term
+     Gt | `Term >  `Term
+    Geq | `Term >= `Term
      In | `Term in `Term
       T | true
       F | false

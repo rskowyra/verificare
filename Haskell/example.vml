@@ -1,11 +1,14 @@
 
 
-host Test 
+host Test :
+  skip
+
+/*
   network.start(MO, REQUEST, CLIENT, SERVER)
   network.originate(MO, REQUEST, CLIENT, SERVER)
   network.end(MO, REQUEST, CLIENT, SERVER)
 
-/*
+
 host Client 
   loop:
     skip

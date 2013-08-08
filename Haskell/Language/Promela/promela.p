@@ -9,10 +9,10 @@ GlobalDecl ::=
 Init ::=
   Init | init
 
-Proctype ::=
+ProcType ::=
   Proctype | proctype `var `([Arg/,]) { `[Decl/;] ; `[Stmt/;] }
 
-Arg ::= 
+Arg ::=
     Arg | `Ty `var
 
 Decl ::=
@@ -26,14 +26,14 @@ Ty ::=
       TyDef | `var
     TyArray | array < # , `Ty >
   TyChannel | channel < # , `Ty >
-  
+
 Stmt ::=
     Goto | goto `var
     Skip | skip
   Assign | `LHS = `Term
       If | if `GuardedBlock
       Do | do `GuardedBlock
-    COpT | `ChannelOp
+    COpS | `ChannelOp
   Atomic | atomic `[Stmt]
 
 LHS ::=
@@ -48,12 +48,12 @@ Formula ::=
     And | `Formula and `Formula
      Or | `Formula or `Formula
         ^
-     Eq | `Term in `Term
-    Neq | `Term in `Term
-     Lt | `Term in `Term
-    Leq | `Term in `Term
-     Gt | `Term in `Term
-    Geq | `Term in `Term
+     Eq | `Term == `Term
+    Neq | `Term != `Term
+     Lt | `Term <  `Term
+    Leq | `Term <= `Term
+     Gt | `Term >  `Term
+    Geq | `Term >= `Term
      In | `Term in `Term
       T | true
       F | false

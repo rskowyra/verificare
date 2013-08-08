@@ -20,9 +20,13 @@ instance R.ToReport Init where
   report x = case x of
     Init  -> R.Span [] [] $ [R.key "init"]
     
-instance R.ToReport Proctype where
+instance R.ToReport ProcType where
   report x = case x of
     Proctype v1 v2 v4 v6 -> R.Span [] [] $ [R.key "proctype", R.var v1, R.report v2, R.key "{", R.report v4, R.key ";", R.report v6, R.key "}"]
+    
+instance R.ToReport Arg where
+  report x = case x of
+    Arg v0 v1 -> R.Span [] [] $ [R.report v0, R.var v1]
     
 instance R.ToReport Decl where
   report x = case x of
@@ -38,12 +42,15 @@ instance R.ToReport Ty where
     TyDef v0 -> R.Span [] [] $ [R.var v0]
     TyArray v4 -> R.Span [] [] $ [R.key "array", R.key "<", R.key "#", R.key ",", R.report v4, R.key ">"]
     TyChannel v4 -> R.Span [] [] $ [R.key "channel", R.key "<", R.key "#", R.key ",", R.report v4, R.key ">"]
+    
+instance R.ToReport Stmt where
+  report x = case x of
     Goto v1 -> R.Span [] [] $ [R.key "goto", R.var v1]
     Skip  -> R.Span [] [] $ [R.key "skip"]
     Assign v0 v2 -> R.Span [] [] $ [R.report v0, R.key "=", R.report v2]
     If v1 -> R.Span [] [] $ [R.key "if", R.report v1]
     Do v1 -> R.Span [] [] $ [R.key "do", R.report v1]
-    COpT v0 -> R.Span [] [] $ [R.report v0]
+    COpS v0 -> R.Span [] [] $ [R.report v0]
     Atomic v1 -> R.Span [] [] $ [R.key "atomic", R.report v1]
     
 instance R.ToReport LHS where
@@ -59,12 +66,12 @@ instance R.ToReport Formula where
     Not v1 -> R.Span [] [] $ [R.key "not", R.report v1]
     And v0 v2 -> R.Span [] [] $ [R.report v0, R.key "and", R.report v2]
     Or v0 v2 -> R.Span [] [] $ [R.report v0, R.key "or", R.report v2]
-    Eq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
-    Neq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
-    Lt v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
-    Leq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
-    Gt v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
-    Geq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
+    Eq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "==", R.report v2]
+    Neq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "!=", R.report v2]
+    Lt v0 v2 -> R.Span [] [] $ [R.report v0, R.key "<", R.report v2]
+    Leq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "<=", R.report v2]
+    Gt v0 v2 -> R.Span [] [] $ [R.report v0, R.key ">", R.report v2]
+    Geq v0 v2 -> R.Span [] [] $ [R.report v0, R.key ">=", R.report v2]
     In v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
     T  -> R.Span [] [] $ [R.key "true"]
     F  -> R.Span [] [] $ [R.key "false"]
