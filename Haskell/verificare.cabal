@@ -12,7 +12,12 @@ Build-Type:        Simple
 
 Library
   Exposed-Modules: Language.VML.AbstractSyntax,
-                   Language.VML.Parse
+                   Language.VML.Report,
+                   Language.VML.Parse,
+                   Language.Promela.AbstractSyntax,
+                   Language.Promela.Report,
+                   Language.Promela.Parse,
+                   Verificare.VMLToPromela
   Build-Depends:   base >= 3 && < 5, MissingH, transformers, 
                    split, parsec, indents,
                    compilation, ascetic, uxadt, richreports, imparse
