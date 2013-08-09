@@ -1,8 +1,19 @@
+----------------------------------------------------------------
+--
+-- Verificare
+-- <description>
+--
+-- Main.hs
+--   Module for executable.
+--
+
+----------------------------------------------------------------
+--
 
 module Main where
 
 import Data.List (splitAt, elemIndex)
-import Text.RichReports (report, Report(Finalize))
+import qualified Text.RichReports as R
 import Text.Ascetic.HTML (html)
 import Text.ParserCombinators.Parsec (ParseError)
 import System.Environment (getArgs)
@@ -12,12 +23,10 @@ import System.Environment (getArgs)
 import qualified Language.VML.AbstractSyntax as VA
 import qualified Language.VML.Parse as VP (parseString)
 import qualified Language.VML.Report as VR
-
 import qualified Language.Promela.AbstractSyntax as PA
 import qualified Language.Promela.Parse as PP (parseString)
 import qualified Language.Promela.Report as PR
-
---import qualified VMLToPromela as VToP (top)
+import qualified Verificare.VMLToPromela as VToP (root)
 
 ----------------------------------------------------------------
 -- The target inputs and outputs, as specified by the user's
@@ -55,9 +64,18 @@ procWrite outs fname =
          Nothing -> return ()
          Just root ->
            do { fname <- return $ fileNamePrefix fname
-              ; writeFile (fname ++ ".html") $ show $ html $ Finalize $ report root
+              ; writeFile (fname ++ ".html") $ 
+                  show $ html $ 
+                    R.Finalize $ 
+                      R.Table [
+                        R.Row [
+                            R.Field (R.report root), 
+                            R.Field (R.Text "    "),
+                            R.Field (R.report $ VToP.root root)
+                          ]
+                        ]
               ; putStr "\n"
-              ; putStr "HTML report emitted."
+              ; putStr "  HTML report emitted."
               ; putStr "\n"
               -- ; putStr $ show (extract $ convertTop' top)
               ; putStr "\n"

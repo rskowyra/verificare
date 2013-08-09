@@ -1,7 +1,25 @@
 
 
-host Test :
+host Client :
   skip
+  skip
+  skip
+
+host Server :
+  skip
+  skip
+  loop:
+    skip
+    skip
+    x := 10 + 3 + 2
+    
+    if x - 2 <= 9:
+      skip
+      skip
+    
+  skip
+  network . end ()
+
 
 /*
   network.start(MO, REQUEST, CLIENT, SERVER)
