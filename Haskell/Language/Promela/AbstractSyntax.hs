@@ -1,4 +1,4 @@
--- This module generated automatically by imparse.
+-- This module was generated automatically by imparse.
 
 module Language.Promela.AbstractSyntax
   where
@@ -17,7 +17,7 @@ data Init =
   deriving (Show, Eq)
 
 data ProcType = 
-    Proctype  String [Arg]  [Decl]  [Stmt] 
+    ProcType  String [Arg]  [Decl]  [Stmt] 
   deriving (Show, Eq)
 
 data Arg = 
@@ -35,8 +35,8 @@ data RHS =
 data Ty = 
     TyInt 
   | TyDef String
-  | TyArray     Ty 
-  | TyChannel     Ty 
+  | TyArray   Integer  Ty 
+  | TyChannel   Integer  Ty 
   deriving (Show, Eq)
 
 data Stmt = 

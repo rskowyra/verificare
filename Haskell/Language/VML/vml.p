@@ -10,8 +10,13 @@ Ty ::=
     TySet | set < `Ty >
   TyArray | array < `Ty >
 
+Decl ::=
+    Decl | `Ty `var `(RHS)
+
+RHS ::=
+    RHS | = `Term
+
 Stmt ::=
-    Decl | `Ty `var = `Term
     Skip | skip
   Action | `var . `var ( `([Constant/,]) )
   Assign | `var := `Term

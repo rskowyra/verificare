@@ -1,4 +1,4 @@
--- This module generated automatically by imparse.
+-- This module was generated automatically by imparse.
 
 module Language.VML.Report
   where
@@ -13,7 +13,7 @@ instance R.ToReport Root where
     
 instance R.ToReport Host where
   report x = case x of
-    Host v1 v3 -> R.Span [] [] $ [R.key "host", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3]]
+    Host v1 v3 v4 -> R.Span [] [] $ [R.key "host", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4]]
     
 instance R.ToReport Ty where
   report x = case x of
@@ -21,9 +21,16 @@ instance R.ToReport Ty where
     TySet v2 -> R.Span [] [] $ [R.key "set", R.key "<", R.report v2, R.key ">"]
     TyArray v2 -> R.Span [] [] $ [R.key "array", R.key "<", R.report v2, R.key ">"]
     
+instance R.ToReport Decl where
+  report x = case x of
+    Decl v0 v1 v2 -> R.Span [] [] $ [R.report v0, R.var v1, R.report v2]
+    
+instance R.ToReport RHS where
+  report x = case x of
+    RHS v1 -> R.Span [] [] $ [R.key "=", R.report v1]
+    
 instance R.ToReport Stmt where
   report x = case x of
-    Decl v0 v1 v3 -> R.Span [] [] $ [R.report v0, R.var v1, R.key "=", R.report v3]
     Skip  -> R.Span [] [] $ [R.key "skip"]
     Action v0 v2 v4 -> R.Span [] [] $ [R.var v0, R.key ".", R.var v2, R.key "(", R.report v4, R.key ")"]
     Assign v0 v2 -> R.Span [] [] $ [R.var v0, R.key ":=", R.report v2]

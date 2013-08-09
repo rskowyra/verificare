@@ -1,4 +1,4 @@
--- This module generated automatically by imparse.
+-- This module was generated automatically by imparse.
 
 module Language.Promela.Report
   where
@@ -9,7 +9,7 @@ import Language.Promela.AbstractSyntax
 
 instance R.ToReport Root where
   report x = case x of
-    Root v0 v1 v2 -> R.Span [] [] $ [R.report v0, R.report v1, R.report v2]
+    Root v0 v1 v2 -> R.Span [] [] $ [R.report v0, R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v1], R.report v2]
     
 instance R.ToReport GlobalDecl where
   report x = case x of
@@ -22,7 +22,7 @@ instance R.ToReport Init where
     
 instance R.ToReport ProcType where
   report x = case x of
-    Proctype v1 v2 v4 v6 -> R.Span [] [] $ [R.key "proctype", R.var v1, R.report v2, R.key "{", R.report v4, R.key ";", R.report v6, R.key "}"]
+    ProcType v1 v2 v4 v6 -> R.Span [] [] $ [R.key "proctype", R.var v1, R.report v2, R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4], R.key ";", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v6], R.key "}"]
     
 instance R.ToReport Arg where
   report x = case x of
@@ -40,8 +40,8 @@ instance R.ToReport Ty where
   report x = case x of
     TyInt  -> R.Span [] [] $ [R.key "int"]
     TyDef v0 -> R.Span [] [] $ [R.var v0]
-    TyArray v4 -> R.Span [] [] $ [R.key "array", R.key "<", R.key "#", R.key ",", R.report v4, R.key ">"]
-    TyChannel v4 -> R.Span [] [] $ [R.key "channel", R.key "<", R.key "#", R.key ",", R.report v4, R.key ">"]
+    TyArray v2 v4 -> R.Span [] [] $ [R.key "array", R.key "<", R.lit (show v2), R.key ",", R.report v4, R.key ">"]
+    TyChannel v2 v4 -> R.Span [] [] $ [R.key "channel", R.key "<", R.lit (show v2), R.key ",", R.report v4, R.key ">"]
     
 instance R.ToReport Stmt where
   report x = case x of
@@ -59,7 +59,7 @@ instance R.ToReport LHS where
     
 instance R.ToReport GuardedBlock where
   report x = case x of
-    GuardedBlock v1 v5 -> R.Span [] [] $ [R.key "(", R.report v1, R.key ")", R.key ":", R.key "{", R.report v5, R.key "}"]
+    GuardedBlock v1 v5 -> R.Span [] [] $ [R.key "(", R.report v1, R.key ")", R.key ":", R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v5], R.key "}"]
     
 instance R.ToReport Formula where
   report x = case x of

@@ -1,6 +1,6 @@
 
 Root ::=
-  Root | `([GlobalDecl]) `([ProcType]) `Init
+  Root | `([GlobalDecl]) `>([ProcType])< `Init
 
 GlobalDecl ::=
      Typedef | typedef `var = `[Decl]
@@ -10,7 +10,7 @@ Init ::=
   Init | init
 
 ProcType ::=
-  Proctype | proctype `var `([Arg/,]) { `[Decl/;] ; `[Stmt/;] }
+  ProcType | proctype `var `([Arg/,]) { `>[Decl/;]< ; `>[Stmt/;]< }
 
 Arg ::=
     Arg | `Ty `var
@@ -24,8 +24,8 @@ RHS ::=
 Ty ::=
       TyInt | int
       TyDef | `var
-    TyArray | array < # , `Ty >
-  TyChannel | channel < # , `Ty >
+    TyArray | array < `# , `Ty >
+  TyChannel | channel < `# , `Ty >
 
 Stmt ::=
     Goto | goto `var
@@ -40,7 +40,7 @@ LHS ::=
   LHS | `var `([Spec])
 
 GuardedBlock ::=
-  GuardedBlock | ( `Formula ) : { `[Stmt/;] }
+  GuardedBlock | ( `Formula ) : { `>[Stmt/;]< }
 
 Formula ::=
     Not | not `Formula

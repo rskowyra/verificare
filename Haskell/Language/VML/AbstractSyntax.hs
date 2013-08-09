@@ -1,4 +1,4 @@
--- This module generated automatically by imparse.
+-- This module was generated automatically by imparse.
 
 module Language.VML.AbstractSyntax
   where
@@ -8,7 +8,7 @@ data Root =
   deriving (Show, Eq)
 
 data Host = 
-    Host  String  [Stmt]
+    Host  String  [Decl] [Stmt]
   deriving (Show, Eq)
 
 data Ty = 
@@ -17,9 +17,16 @@ data Ty =
   | TyArray   Ty 
   deriving (Show, Eq)
 
+data Decl = 
+    Decl Ty String (Maybe RHS)
+  deriving (Show, Eq)
+
+data RHS = 
+    RHS  Term
+  deriving (Show, Eq)
+
 data Stmt = 
-    Decl Ty String  Term
-  | Skip 
+    Skip 
   | Action String  String  [Constant] 
   | Assign String  Term
   | Loop   [Stmt]

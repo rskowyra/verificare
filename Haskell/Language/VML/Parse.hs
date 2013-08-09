@@ -1,4 +1,4 @@
--- This module generated automatically by imparse.
+-- This module was generated automatically by imparse.
 
 module Language.VML.Parse
   where
@@ -75,41 +75,44 @@ root = do { whiteSpace ; r <- pRoot ; eof ; return r }
 
 pRoot = do {v0 <- (many1 (pHost)); return $ Root v0}
   
-pHost = do {res "host"; v1 <- identifier; res ":"; v3 <- (PI.indented >> PI.block (pStmt)); return $ Host v1 v3}
+pHost = do {res "host"; v1 <- identifier; res ":"; v3 <- (PI.indented >> block0 (pDecl)); v4 <- (PI.indented >> PI.block (pStmt)); return $ Host v1 v3 v4}
   
 pTy =
-      do {res "int"; return $ TyInt }
-  <|> do {res "set"; res "<"; v2 <- pTy; res ">"; return $ TySet v2}
-  <|> do {res "array"; res "<"; v2 <- pTy; res ">"; return $ TyArray v2}
+       do {res "int"; return $ TyInt }
+  <?|> do {res "set"; res "<"; v2 <- pTy; res ">"; return $ TySet v2}
+  <?|> do {res "array"; res "<"; v2 <- pTy; res ">"; return $ TyArray v2}
+  
+pDecl = do {v0 <- pTy; v1 <- identifier; v2 <- (may (pRHS)); return $ Decl v0 v1 v2}
+  
+pRHS = do {res "="; v1 <- pTerm; return $ RHS v1}
   
 pStmt =
-      do {v0 <- pTy; v1 <- identifier; res "="; v3 <- pTerm; return $ Decl v0 v1 v3}
-  <|> do {res "skip"; return $ Skip }
-  <|> do {v0 <- identifier; res "."; v2 <- identifier; res "("; v4 <- (sepBy pConstant (res ",")); res ")"; return $ Action v0 v2 v4}
-  <|> do {v0 <- identifier; res ":="; v2 <- pTerm; return $ Assign v0 v2}
-  <|> do {res "loop"; res ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ Loop v2}
-  <|> do {res "if"; v1 <- pFormula; res ":"; v3 <- (PI.indented >> PI.block (pStmt)); return $ If v1 v3}
+       do {res "skip"; return $ Skip }
+  <?|> do {v0 <- identifier; res "."; v2 <- identifier; res "("; v4 <- (sepBy pConstant (res ",")); res ")"; return $ Action v0 v2 v4}
+  <?|> do {v0 <- identifier; res ":="; v2 <- pTerm; return $ Assign v0 v2}
+  <?|> do {res "loop"; res ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ Loop v2}
+  <?|> do {res "if"; v1 <- pFormula; res ":"; v3 <- (PI.indented >> PI.block (pStmt)); return $ If v1 v3}
   
 pFormula = PE.buildExpressionParser [[prefix "not" Not],[binary "and" And PE.AssocLeft,binary "or" Or PE.AssocLeft]] (
       do {v0 <- pTerm; res "=="; v2 <- pTerm; return $ Eq v0 v2}
-  <|> do {v0 <- pTerm; res "!="; v2 <- pTerm; return $ Neq v0 v2}
-  <|> do {v0 <- pTerm; res "<"; v2 <- pTerm; return $ Lt v0 v2}
-  <|> do {v0 <- pTerm; res "<="; v2 <- pTerm; return $ Leq v0 v2}
-  <|> do {v0 <- pTerm; res ">"; v2 <- pTerm; return $ Gt v0 v2}
-  <|> do {v0 <- pTerm; res ">="; v2 <- pTerm; return $ Geq v0 v2}
-  <|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ In v0 v2}
-  <|> do {res "true"; return $ T }
-  <|> do {res "false"; return $ F }
+  <?|> do {v0 <- pTerm; res "!="; v2 <- pTerm; return $ Neq v0 v2}
+  <?|> do {v0 <- pTerm; res "<"; v2 <- pTerm; return $ Lt v0 v2}
+  <?|> do {v0 <- pTerm; res "<="; v2 <- pTerm; return $ Leq v0 v2}
+  <?|> do {v0 <- pTerm; res ">"; v2 <- pTerm; return $ Gt v0 v2}
+  <?|> do {v0 <- pTerm; res ">="; v2 <- pTerm; return $ Geq v0 v2}
+  <?|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ In v0 v2}
+  <?|> do {res "true"; return $ T }
+  <?|> do {res "false"; return $ F }
   )
 pTerm = PE.buildExpressionParser [[binary "*" Mult PE.AssocLeft,binary "/" Div PE.AssocLeft,binary "^" Pow PE.AssocLeft],[binary "+" Plus PE.AssocLeft,binary "-" Minus PE.AssocLeft],[prefix "-" Neg]] (
       do {res "["; v1 <- (sepBy pTerm (res ",")); res "]"; return $ Array v1}
-  <|> do {res "{"; v1 <- (sepBy pTerm (res ",")); res "}"; return $ Set v1}
-  <|> do {v0 <- identifier; v1 <- (many (pSpec)); return $ V v0 v1}
-  <|> do {v0 <- natural; return $ N v0}
+  <?|> do {res "{"; v1 <- (sepBy pTerm (res ",")); res "}"; return $ Set v1}
+  <?|> do {v0 <- identifier; v1 <- (many (pSpec)); return $ V v0 v1}
+  <?|> do {v0 <- natural; return $ N v0}
   )
 pSpec =
-      do {res "["; v1 <- pTerm; res "]"; return $ Index v1}
-  <|> do {res "."; v1 <- identifier; return $ Field v1}
+       do {res "["; v1 <- pTerm; res "]"; return $ Index v1}
+  <?|> do {res "."; v1 <- identifier; return $ Field v1}
   
 pConstant = do {v0 <- flag; return $ C v0}
   
