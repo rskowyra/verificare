@@ -8,7 +8,10 @@ Host ::=
 Ty ::=
     TyInt | int
     TySet | set < `Ty >
-  TyArray | array < `Ty >
+  TyArray | array < `Ty > `(Dims)
+
+Dims ::=
+   Dims | ^ `#
 
 Decl ::=
     Decl | `Ty `var `(RHS)
@@ -20,8 +23,12 @@ Stmt ::=
     Skip | skip
   Action | `var . `var ( `([Constant/,]) )
   Assign | `var := `Term
+  Select | select : `>>[GuardedBlock]<<
     Loop | loop : `>>[Stmt]<<
       If | if `Formula : `>>[Stmt]<<
+
+GuardedBlock ::=
+  GuardedBlock | `Formula : `>>[Stmt]<<
 
 Formula ::=
     Not | not `Formula

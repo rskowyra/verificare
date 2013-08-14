@@ -21,6 +21,8 @@ import qualified Language.Promela.AbstractSyntax as P
 ----------------------------------------------------------------
 --
 
+maxArraySize = 4
+
 root :: V.Root -> P.Root
 root (V.Root hs) = 
   let hgs = [host h | h <- hs]
@@ -38,45 +40,38 @@ host (V.Host n ds ss) =
 
 decl :: V.Decl -> ([P.Decl], [P.Stmt], [P.GlobalDecl])
 decl (V.Decl t x mt) =
-  let () = ()
-      
-  in case t of
-       V.TyInt -> 
-         ([P.Decl (ty t) x (maybe Nothing (Just . rhs) mt)], [], [])
-
-       V.TyArray V.TyInt ->
-         case mt of
+  let base =
+       case mt of
            Nothing           ->
-             ([P.Decl (P.TyArray 256 P.TyInt) x Nothing], [], [])
+             ([P.Decl P.TyInt x (Just (P.Size (P.N maxArraySize))) Nothing], [], [])
            Just (V.RHS (V.Array ts)) ->
              ( 
-               [P.Decl (P.TyArray 256 P.TyInt) x Nothing], 
+               [P.Decl P.TyInt x (Just (P.Size (P.N maxArraySize))) Nothing], 
                [ P.Assign (P.LHS x [P.Index (P.N (toInteger i))]) (term (ts!!i)) 
                | i <- [0..length ts-1]
                ], 
                []
              )
-         
-       V.TyArray t ->
-         let globalDecs k t = case t of
-               V.TyArray (t@(V.TyArray _)) -> 
-                    [P.Typedef ("arr" ++ show k) [P.Decl (P.TyArray 256 (P.TyDef ("arr" ++ (show (k+1))))) "a" Nothing]]
-                 ++ globalDecs (k+1) t
+  in case t of
+       V.TyInt -> ([P.Decl (ty t) x Nothing (maybe Nothing (Just . rhs) mt)], [], [])
+       V.TyArray V.TyInt Nothing -> base
+       V.TyArray V.TyInt (Just (V.Dims 1)) -> base
+       V.TyArray t (Just (V.Dims n)) ->
+         (
+          [P.Decl (P.TyDef ("arr" ++ (show t) ++ (show (n-1)))) x (Just (P.Size (P.N maxArraySize))) Nothing],
+          [], 
+            [ P.Typedef ("arr" ++ (show t) ++ show 1) [P.Decl (ty t) "a" (Just (P.Size (P.N maxArraySize))) Nothing]]
+          ++[ P.Typedef ("arr" ++ (show t) ++ show (k+1)) [P.Decl (P.TyDef ("arr" ++ (show t) ++ (show k))) "a" (Just (P.Size (P.N maxArraySize))) Nothing] 
+            |  k <- [1..n-2]
+            ]
+         )
 
-               V.TyArray t -> [P.Typedef ("arr" ++ show k) [P.Decl (P.TyArray 256 (ty t)) "a" Nothing]]
-               V.TyInt     -> []
-
-         in case mt of
-              Nothing           ->
-                ([P.Decl (P.TyArray 256 (P.TyDef "arr0")) x Nothing], [], globalDecs 0 t)
-         
-
-           
-           
+{-
        V.TySet V.TyInt ->
          case mt of
            Nothing                 -> ([P.Decl (P.TyChannel 256 P.TyInt) x Nothing], [], [])
            Just (V.RHS (V.Set ks)) -> ([P.Decl (P.TyChannel 256 P.TyInt) x Nothing], [P.COpS (P.Send x [P.N k]) | V.N k <- ks], [])
+-}
 
 ty :: V.Ty -> P.Ty
 ty t = case t of
@@ -87,8 +82,9 @@ stmt s = case s of
   V.Skip -> P.Skip
   V.Assign x t -> P.Assign (P.LHS x []) (term t)
   V.Action a v c -> P.Skip -- ???
-  V.If f ss -> P.If $ P.GuardedBlock (formula f) (map stmt ss)
-  V.Loop ss -> P.Do $ P.GuardedBlock (P.T) (map stmt ss)
+  V.If f ss -> P.If [P.GuardedBlock (formula f) (map stmt ss)]
+  V.Loop ss -> P.Do [P.GuardedBlock (P.T) (map stmt ss)]
+  V.Select gbs -> P.If [P.GuardedBlock (formula f) (map stmt ss) | V.GuardedBlock f ss <- gbs]
 
 formula :: V.Formula -> P.Formula
 formula f = case f of
@@ -101,11 +97,11 @@ formula f = case f of
   V.Leq t1 t2 -> P.Leq (term t1) (term t2)
   V.Gt  t1 t2 -> P.Gt (term t1) (term t2)
   V.Geq t1 t2 -> P.Geq (term t1) (term t2)
-  {- V.In  t1 t2 ->
+  V.In  t1 t2 ->
     let pt1 = term t1
-        pt2 = term t2
-    in foldr P.Or (P.F) [P.Eq pt1 (P.Index pt2 (P.N i)) | i <- [0..255]]
-  -}
+    in case term t2 of
+         P.V a [] -> foldr P.Or (P.F) [P.Eq pt1 (P.V a [P.Index $ P.N i]) | i <- [0..maxArraySize-1]]
+         _ -> P.F
 
 rhs :: V.RHS -> P.RHS
 rhs (V.RHS t) = P.RHS (term t)

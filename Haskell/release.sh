@@ -1,7 +1,7 @@
 ## Release script for HackageDB.
 
 cabal update
-cabal install compilation staticanalysis ascetic uxadt richreports imparse 
+cabal install compilation staticanalysis ascetic uxadt richreports imparse
 
 cd ./Language/VML
 imparse -html -hs "Language.VML" "vml.p"

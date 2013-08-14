@@ -19,7 +19,11 @@ instance R.ToReport Ty where
   report x = case x of
     TyInt  -> R.Span [] [] $ [R.key "int"]
     TySet v2 -> R.Span [] [] $ [R.key "set", R.key "<", R.report v2, R.key ">"]
-    TyArray v2 -> R.Span [] [] $ [R.key "array", R.key "<", R.report v2, R.key ">"]
+    TyArray v2 v4 -> R.Span [] [] $ [R.key "array", R.key "<", R.report v2, R.key ">", R.report v4]
+    
+instance R.ToReport Dims where
+  report x = case x of
+    Dims v1 -> R.Span [] [] $ [R.key "^", R.lit (show v1)]
     
 instance R.ToReport Decl where
   report x = case x of
@@ -34,8 +38,13 @@ instance R.ToReport Stmt where
     Skip  -> R.Span [] [] $ [R.key "skip"]
     Action v0 v2 v4 -> R.Span [] [] $ [R.var v0, R.key ".", R.var v2, R.key "(", R.report v4, R.key ")"]
     Assign v0 v2 -> R.Span [] [] $ [R.var v0, R.key ":=", R.report v2]
+    Select v2 -> R.Span [] [] $ [R.key "select", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     Loop v2 -> R.Span [] [] $ [R.key "loop", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     If v1 v3 -> R.Span [] [] $ [R.key "if", R.report v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3]]
+    
+instance R.ToReport GuardedBlock where
+  report x = case x of
+    GuardedBlock v0 v2 -> R.Span [] [] $ [R.report v0, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     
 instance R.ToReport Formula where
   report x = case x of

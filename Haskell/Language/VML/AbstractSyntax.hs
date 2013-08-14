@@ -14,7 +14,11 @@ data Host =
 data Ty = 
     TyInt 
   | TySet   Ty 
-  | TyArray   Ty 
+  | TyArray   Ty  (Maybe Dims)
+  deriving (Show, Eq)
+
+data Dims = 
+    Dims  Integer
   deriving (Show, Eq)
 
 data Decl = 
@@ -29,8 +33,13 @@ data Stmt =
     Skip 
   | Action String  String  [Constant] 
   | Assign String  Term
+  | Select   [GuardedBlock]
   | Loop   [Stmt]
   | If  Formula  [Stmt]
+  deriving (Show, Eq)
+
+data GuardedBlock = 
+    GuardedBlock Formula  [Stmt]
   deriving (Show, Eq)
 
 data Formula = 

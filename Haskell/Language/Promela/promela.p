@@ -1,52 +1,56 @@
 
 Root ::=
-  Root | `([GlobalDecl]) `>([ProcType])< `Init
+  Root | `>([GlobalDecl])< `>([ProcType])< `Init
 
 GlobalDecl ::=
-     Typedef | typedef `var = `[Decl]
+     Typedef | typedef `var { `>[Decl]< }
   GlobalDecl | `Decl
 
 Init ::=
   Init | init
 
 ProcType ::=
-  ProcType | proctype `var `([Arg/,]) { `>[Decl/;]< ; `>[Stmt/;]< }
+  ProcType | proctype `var `([Arg/,]) { `>[Decl]< `>[Stmt]< }
 
 Arg ::=
     Arg | `Ty `var
 
 Decl ::=
-  Decl | `Ty `var `(RHS)
+  Decl | `Ty `var `(Size) `(RHS) ;
+
+Size ::=
+  Size | [ `Term ]
 
 RHS ::=
   RHS | = `Term
 
 Ty ::=
       TyInt | int
+     TyByte | byte
       TyDef | `var
-    TyArray | array < `# , `Ty >
-  TyChannel | channel < `# , `Ty >
+  TyChannel | channel <`Ty >
 
 Stmt ::=
-    Goto | goto `var
-    Skip | skip
-  Assign | `LHS = `Term
-      If | if `GuardedBlock
-      Do | do `GuardedBlock
+    Skip | skip ;
+  Assign | `LHS = `Term ;
+      If | if `>[GuardedBlock]< fi ;
+      Do | do `>[GuardedBlock]< od ;
+  Atomic | atomic { `>[Stmt]< }
+    Goto | goto `var ;
+   Label | `var : 
     COpS | `ChannelOp
-  Atomic | atomic `[Stmt]
 
 LHS ::=
   LHS | `var `([Spec])
 
 GuardedBlock ::=
-  GuardedBlock | ( `Formula ) : { `>[Stmt/;]< }
+  GuardedBlock | :: ( `Formula ) -> `>[Stmt]<
 
 Formula ::=
-    Not | not `Formula
+    Not | ! `Formula
         ^
-    And | `Formula and `Formula
-     Or | `Formula or `Formula
+    And | `Formula && `Formula
+     Or | `Formula || `Formula
         ^
      Eq | `Term == `Term
     Neq | `Term != `Term

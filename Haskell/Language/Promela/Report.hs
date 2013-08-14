@@ -9,11 +9,11 @@ import Language.Promela.AbstractSyntax
 
 instance R.ToReport Root where
   report x = case x of
-    Root v0 v1 v2 -> R.Span [] [] $ [R.report v0, R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v1], R.report v2]
+    Root v0 v1 v2 -> R.Span [] [] $ [R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v0], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v1], R.report v2]
     
 instance R.ToReport GlobalDecl where
   report x = case x of
-    Typedef v1 v3 -> R.Span [] [] $ [R.key "typedef", R.var v1, R.key "=", R.report v3]
+    Typedef v1 v3 -> R.Span [] [] $ [R.key "typedef", R.var v1, R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.key "}"]
     GlobalDecl v0 -> R.Span [] [] $ [R.report v0]
     
 instance R.ToReport Init where
@@ -22,7 +22,7 @@ instance R.ToReport Init where
     
 instance R.ToReport ProcType where
   report x = case x of
-    ProcType v1 v2 v4 v6 -> R.Span [] [] $ [R.key "proctype", R.var v1, R.report v2, R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4], R.key ";", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v6], R.key "}"]
+    ProcType v1 v2 v4 v5 -> R.Span [] [] $ [R.key "proctype", R.var v1, R.report v2, R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v5], R.key "}"]
     
 instance R.ToReport Arg where
   report x = case x of
@@ -30,7 +30,11 @@ instance R.ToReport Arg where
     
 instance R.ToReport Decl where
   report x = case x of
-    Decl v0 v1 v2 -> R.Span [] [] $ [R.report v0, R.var v1, R.report v2]
+    Decl v0 v1 v2 v3 -> R.Span [] [] $ [R.report v0, R.var v1, R.report v2, R.report v3, R.key ";"]
+    
+instance R.ToReport Size where
+  report x = case x of
+    Size v1 -> R.Span [] [] $ [R.key "[", R.report v1, R.key "]"]
     
 instance R.ToReport RHS where
   report x = case x of
@@ -39,19 +43,20 @@ instance R.ToReport RHS where
 instance R.ToReport Ty where
   report x = case x of
     TyInt  -> R.Span [] [] $ [R.key "int"]
+    TyByte  -> R.Span [] [] $ [R.key "byte"]
     TyDef v0 -> R.Span [] [] $ [R.var v0]
-    TyArray v2 v4 -> R.Span [] [] $ [R.key "array", R.key "<", R.lit (show v2), R.key ",", R.report v4, R.key ">"]
-    TyChannel v2 v4 -> R.Span [] [] $ [R.key "channel", R.key "<", R.lit (show v2), R.key ",", R.report v4, R.key ">"]
+    TyChannel  -> R.Span [] [] $ [R.key "channel", R.key "<`Ty", R.key ">"]
     
 instance R.ToReport Stmt where
   report x = case x of
-    Goto v1 -> R.Span [] [] $ [R.key "goto", R.var v1]
-    Skip  -> R.Span [] [] $ [R.key "skip"]
-    Assign v0 v2 -> R.Span [] [] $ [R.report v0, R.key "=", R.report v2]
-    If v1 -> R.Span [] [] $ [R.key "if", R.report v1]
-    Do v1 -> R.Span [] [] $ [R.key "do", R.report v1]
+    Skip  -> R.Span [] [] $ [R.key "skip", R.key ";"]
+    Assign v0 v2 -> R.Span [] [] $ [R.report v0, R.key "=", R.report v2, R.key ";"]
+    If v1 -> R.Span [] [] $ [R.key "if", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v1], R.key "fi", R.key ";"]
+    Do v1 -> R.Span [] [] $ [R.key "do", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v1], R.key "od", R.key ";"]
+    Atomic v2 -> R.Span [] [] $ [R.key "atomic", R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2], R.key "}"]
+    Goto v1 -> R.Span [] [] $ [R.key "goto", R.var v1, R.key ";"]
+    Label v0 -> R.Span [] [] $ [R.var v0, R.key ":"]
     COpS v0 -> R.Span [] [] $ [R.report v0]
-    Atomic v1 -> R.Span [] [] $ [R.key "atomic", R.report v1]
     
 instance R.ToReport LHS where
   report x = case x of
@@ -59,13 +64,13 @@ instance R.ToReport LHS where
     
 instance R.ToReport GuardedBlock where
   report x = case x of
-    GuardedBlock v1 v5 -> R.Span [] [] $ [R.key "(", R.report v1, R.key ")", R.key ":", R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v5], R.key "}"]
+    GuardedBlock v2 v5 -> R.Span [] [] $ [R.key "::", R.key "(", R.report v2, R.key ")", R.key "->", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v5]]
     
 instance R.ToReport Formula where
   report x = case x of
-    Not v1 -> R.Span [] [] $ [R.key "not", R.report v1]
-    And v0 v2 -> R.Span [] [] $ [R.report v0, R.key "and", R.report v2]
-    Or v0 v2 -> R.Span [] [] $ [R.report v0, R.key "or", R.report v2]
+    Not v1 -> R.Span [] [] $ [R.key "!", R.report v1]
+    And v0 v2 -> R.Span [] [] $ [R.report v0, R.key "&&", R.report v2]
+    Or v0 v2 -> R.Span [] [] $ [R.report v0, R.key "||", R.report v2]
     Eq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "==", R.report v2]
     Neq v0 v2 -> R.Span [] [] $ [R.report v0, R.key "!=", R.report v2]
     Lt v0 v2 -> R.Span [] [] $ [R.report v0, R.key "<", R.report v2]

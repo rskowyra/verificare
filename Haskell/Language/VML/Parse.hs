@@ -40,7 +40,7 @@ langDef = PL.javaStyle
   , PL.opStart           = PL.opLetter langDef
   , PL.opLetter          = oneOf "not-adr*/^+"
   , PL.reservedOpNames   = ["not","-","and","or","*","/","^","+"]
-  , PL.reservedNames     = ["host",":","int","set","<",">","array","=","skip",".","(",")",":=","loop","if","==","!=","<=",">=","in","true","false","[","]","{","}"]
+  , PL.reservedNames     = ["host",":","int","set","<",">","array","=","skip",".","(",")",":=","select","loop","if","==","!=","<=",">=","in","true","false","[","]","{","}"]
   , PL.commentLine       = "#"
   }
 
@@ -80,7 +80,9 @@ pHost = do {res "host"; v1 <- identifier; res ":"; v3 <- (PI.indented >> block0 
 pTy =
        do {res "int"; return $ TyInt }
   <?|> do {res "set"; res "<"; v2 <- pTy; res ">"; return $ TySet v2}
-  <?|> do {res "array"; res "<"; v2 <- pTy; res ">"; return $ TyArray v2}
+  <?|> do {res "array"; res "<"; v2 <- pTy; res ">"; v4 <- (may (pDims)); return $ TyArray v2 v4}
+  
+pDims = do {res "^"; v1 <- natural; return $ Dims v1}
   
 pDecl = do {v0 <- pTy; v1 <- identifier; v2 <- (may (pRHS)); return $ Decl v0 v1 v2}
   
@@ -90,8 +92,11 @@ pStmt =
        do {res "skip"; return $ Skip }
   <?|> do {v0 <- identifier; res "."; v2 <- identifier; res "("; v4 <- (sepBy pConstant (res ",")); res ")"; return $ Action v0 v2 v4}
   <?|> do {v0 <- identifier; res ":="; v2 <- pTerm; return $ Assign v0 v2}
+  <?|> do {res "select"; res ":"; v2 <- (PI.indented >> PI.block (pGuardedBlock)); return $ Select v2}
   <?|> do {res "loop"; res ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ Loop v2}
   <?|> do {res "if"; v1 <- pFormula; res ":"; v3 <- (PI.indented >> PI.block (pStmt)); return $ If v1 v3}
+  
+pGuardedBlock = do {v0 <- pFormula; res ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ GuardedBlock v0 v2}
   
 pFormula = PE.buildExpressionParser [[prefix "not" Not],[binary "and" And PE.AssocLeft,binary "or" Or PE.AssocLeft]] (
       do {v0 <- pTerm; res "=="; v2 <- pTerm; return $ Eq v0 v2}

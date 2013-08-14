@@ -38,9 +38,9 @@ langDef = PL.javaStyle
   { PL.identStart        = oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkmlnopqrstuvwxyz_" -- Only lowercase.
   , PL.identLetter       = alphaNum <|> oneOf "_'"
   , PL.opStart           = PL.opLetter langDef
-  , PL.opLetter          = oneOf "not-adr*/^+"
-  , PL.reservedOpNames   = ["not","-","and","or","*","/","^","+"]
-  , PL.reservedNames     = ["typedef","=","init","proctype","{",";","}","int","array","<",",",">","channel","goto","skip","if","do","atomic","(",")",":","==","!=","<=",">=","in","true","false","[","]","send","receive","."]
+  , PL.opLetter          = oneOf "!-&|*/^+"
+  , PL.reservedOpNames   = ["!","-","&&","||","*","/","^","+"]
+  , PL.reservedNames     = ["typedef","{","}","init","proctype",";","[","]","=","int","byte","channel","<`Ty",">","skip","if","fi","do","od","atomic","goto",":","::","(",")","->","==","!=","<","<=",">=","in","true","false","send","receive","."]
   , PL.commentLine       = "#"
   }
 
@@ -76,39 +76,42 @@ root = do { whiteSpace ; r <- pRoot ; eof ; return r }
 pRoot = do {v0 <- (many (pGlobalDecl)); v1 <- (many (pProcType)); v2 <- pInit; return $ Root v0 v1 v2}
   
 pGlobalDecl =
-       do {res "typedef"; v1 <- identifier; res "="; v3 <- (many1 (pDecl)); return $ Typedef v1 v3}
+       do {res "typedef"; v1 <- identifier; res "{"; v3 <- (many1 (pDecl)); res "}"; return $ Typedef v1 v3}
   <?|> do {v0 <- pDecl; return $ GlobalDecl v0}
   
 pInit = do {res "init"; return $ Init }
   
-pProcType = do {res "proctype"; v1 <- identifier; v2 <- (sepBy pArg (res ",")); res "{"; v4 <- (sepBy1 pDecl (res ";")); res ";"; v6 <- (sepBy1 pStmt (res ";")); res "}"; return $ ProcType v1 v2 v4 v6}
+pProcType = do {res "proctype"; v1 <- identifier; v2 <- (sepBy pArg (res ",")); res "{"; v4 <- (many1 (pDecl)); v5 <- (many1 (pStmt)); res "}"; return $ ProcType v1 v2 v4 v5}
   
 pArg = do {v0 <- pTy; v1 <- identifier; return $ Arg v0 v1}
   
-pDecl = do {v0 <- pTy; v1 <- identifier; v2 <- (may (pRHS)); return $ Decl v0 v1 v2}
+pDecl = do {v0 <- pTy; v1 <- identifier; v2 <- (may (pSize)); v3 <- (may (pRHS)); res ";"; return $ Decl v0 v1 v2 v3}
+  
+pSize = do {res "["; v1 <- pTerm; res "]"; return $ Size v1}
   
 pRHS = do {res "="; v1 <- pTerm; return $ RHS v1}
   
 pTy =
        do {res "int"; return $ TyInt }
+  <?|> do {res "byte"; return $ TyByte }
   <?|> do {v0 <- identifier; return $ TyDef v0}
-  <?|> do {res "array"; res "<"; v2 <- natural; res ","; v4 <- pTy; res ">"; return $ TyArray v2 v4}
-  <?|> do {res "channel"; res "<"; v2 <- natural; res ","; v4 <- pTy; res ">"; return $ TyChannel v2 v4}
+  <?|> do {res "channel"; res "<`Ty"; res ">"; return $ TyChannel }
   
 pStmt =
-       do {res "goto"; v1 <- identifier; return $ Goto v1}
-  <?|> do {res "skip"; return $ Skip }
-  <?|> do {v0 <- pLHS; res "="; v2 <- pTerm; return $ Assign v0 v2}
-  <?|> do {res "if"; v1 <- pGuardedBlock; return $ If v1}
-  <?|> do {res "do"; v1 <- pGuardedBlock; return $ Do v1}
+       do {res "skip"; res ";"; return $ Skip }
+  <?|> do {v0 <- pLHS; res "="; v2 <- pTerm; res ";"; return $ Assign v0 v2}
+  <?|> do {res "if"; v1 <- (many1 (pGuardedBlock)); res "fi"; res ";"; return $ If v1}
+  <?|> do {res "do"; v1 <- (many1 (pGuardedBlock)); res "od"; res ";"; return $ Do v1}
+  <?|> do {res "atomic"; res "{"; v2 <- (many1 (pStmt)); res "}"; return $ Atomic v2}
+  <?|> do {res "goto"; v1 <- identifier; res ";"; return $ Goto v1}
+  <?|> do {v0 <- identifier; res ":"; return $ Label v0}
   <?|> do {v0 <- pChannelOp; return $ COpS v0}
-  <?|> do {res "atomic"; v1 <- (many1 (pStmt)); return $ Atomic v1}
   
 pLHS = do {v0 <- identifier; v1 <- (many (pSpec)); return $ LHS v0 v1}
   
-pGuardedBlock = do {res "("; v1 <- pFormula; res ")"; res ":"; res "{"; v5 <- (sepBy1 pStmt (res ";")); res "}"; return $ GuardedBlock v1 v5}
+pGuardedBlock = do {res "::"; res "("; v2 <- pFormula; res ")"; res "->"; v5 <- (many1 (pStmt)); return $ GuardedBlock v2 v5}
   
-pFormula = PE.buildExpressionParser [[prefix "not" Not],[binary "and" And PE.AssocLeft,binary "or" Or PE.AssocLeft]] (
+pFormula = PE.buildExpressionParser [[prefix "!" Not],[binary "&&" And PE.AssocLeft,binary "||" Or PE.AssocLeft]] (
       do {v0 <- pTerm; res "=="; v2 <- pTerm; return $ Eq v0 v2}
   <?|> do {v0 <- pTerm; res "!="; v2 <- pTerm; return $ Neq v0 v2}
   <?|> do {v0 <- pTerm; res "<"; v2 <- pTerm; return $ Lt v0 v2}

@@ -8,7 +8,7 @@ data Root =
   deriving (Show, Eq)
 
 data GlobalDecl = 
-    Typedef  String  [Decl]
+    Typedef  String  [Decl] 
   | GlobalDecl Decl
   deriving (Show, Eq)
 
@@ -17,7 +17,7 @@ data Init =
   deriving (Show, Eq)
 
 data ProcType = 
-    ProcType  String [Arg]  [Decl]  [Stmt] 
+    ProcType  String [Arg]  [Decl] [Stmt] 
   deriving (Show, Eq)
 
 data Arg = 
@@ -25,7 +25,11 @@ data Arg =
   deriving (Show, Eq)
 
 data Decl = 
-    Decl Ty String (Maybe RHS)
+    Decl Ty String (Maybe Size) (Maybe RHS) 
+  deriving (Show, Eq)
+
+data Size = 
+    Size  Term 
   deriving (Show, Eq)
 
 data RHS = 
@@ -34,19 +38,20 @@ data RHS =
 
 data Ty = 
     TyInt 
+  | TyByte 
   | TyDef String
-  | TyArray   Integer  Ty 
-  | TyChannel   Integer  Ty 
+  | TyChannel   
   deriving (Show, Eq)
 
 data Stmt = 
-    Goto  String
-  | Skip 
-  | Assign LHS  Term
-  | If  GuardedBlock
-  | Do  GuardedBlock
+    Skip  
+  | Assign LHS  Term 
+  | If  [GuardedBlock]  
+  | Do  [GuardedBlock]  
+  | Atomic   [Stmt] 
+  | Goto  String 
+  | Label String 
   | COpS ChannelOp
-  | Atomic  [Stmt]
   deriving (Show, Eq)
 
 data LHS = 
@@ -54,7 +59,7 @@ data LHS =
   deriving (Show, Eq)
 
 data GuardedBlock = 
-    GuardedBlock  Formula    [Stmt] 
+    GuardedBlock   Formula   [Stmt]
   deriving (Show, Eq)
 
 data Formula = 
