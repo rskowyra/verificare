@@ -7,14 +7,15 @@ host Client :
 
 host Server :
   int x = 5
-  array < int > ^ 4  a
-  array < int > ^ 3  b
-  array < int > ^ 2  c
-  array < int > ^ 1  d
-  array < int > e
+  array <int> ^ 4  a
+  array <int> ^ 3  b
+  array <int> ^ 2  c
+  array <int> ^ 1  d
+  array <int> e
 
   skip
   skip
+  network.end()
   loop:
     skip
     skip
@@ -34,7 +35,7 @@ host Server :
         skip
       
   skip
-  network . end ()
+  
 
 
   
