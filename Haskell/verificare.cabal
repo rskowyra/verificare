@@ -20,13 +20,13 @@ Library
                    Verificare.VMLToPromela
   Build-Depends:   base >= 3 && < 5, MissingH, transformers, 
                    split, parsec, indents,
-                   compilation, ascetic, uxadt, richreports, imparse
+                   compilation, staticanalysis, ascetic, uxadt, richreports, imparse
 
 Executable verificare
   Main-Is:         Main.hs
   Build-Depends:   base >= 3 && < 5, MissingH, transformers, 
                    split, parsec, indents,
-                   compilation, ascetic, uxadt, richreports, imparse
+                   compilation, staticanalysis, ascetic, uxadt, richreports, imparse
 
 Source-Repository head
   Type:            git
