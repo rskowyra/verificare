@@ -1,21 +1,20 @@
-
 Root ::=
   Root | `[DA]
 
 DA ::=
-  DA | da `var : `>>[Decl]<< `>>[ActionDef]<< `>>[Formula]<<
+  DA | da `var : `>>[Decl]<< `>>[ActionDef]<< `>>([Formula])<<
 
 Decl ::=
     Decl | `Ty `var `(RHS)
 
 ActionDef ::=
-   ActionDef | action `var : `>>(Preconditions)<< `>>(Postconditions)<<
+   ActionDef | action `var : `>>[Preconditions]<< `>>[Postconditions]<<
 
 Preconditions ::=
-   Preconditions | pre : ``>>[Formula]<<
+   Preconditions | pre : `>>[Formula]<<
 
 Postconditions ::=
-   Postconditions | post : ``>>[Postcondition]<<
+   Postconditions | post : `>>[Postcondition]<<
 
 Postcondition ::=
      Constraint | `Formula
@@ -25,6 +24,7 @@ Postcondition ::=
 Exp ::=
       Var | `var
     Const | `flag
+
 Ty ::=
     TyInt | int
     TySet | set < `Ty >
@@ -35,8 +35,6 @@ Dims ::=
 
 RHS ::=
     RHS | = `Term
-Block ::=
-  GuardedBlock | `Formula : `>>[Stmt]<<
 
 Formula ::=
     Not | not `Formula
@@ -53,6 +51,7 @@ Formula ::=
      In | `Term in `Term
       T | true
       F | false
+
 Term ::=
    Mult | `Term * `Term
     Div | `Term / `Term
@@ -71,5 +70,3 @@ Term ::=
 Spec ::=
   Index | [ `Term ]
   Field | . `var
-Constant ::=
-      C | `flag

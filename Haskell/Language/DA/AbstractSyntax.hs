@@ -16,15 +16,15 @@ data Decl =
   deriving (Show, Eq)
 
 data ActionDef = 
-    ActionDef  String  (Maybe Preconditions) (Maybe Postconditions)
+    ActionDef  String  [Preconditions] [Postconditions]
   deriving (Show, Eq)
 
 data Preconditions = 
-    Preconditions   
+    Preconditions   [Formula]
   deriving (Show, Eq)
 
 data Postconditions = 
-    Postconditions   
+    Postconditions   [Postcondition]
   deriving (Show, Eq)
 
 data Postcondition = 
@@ -50,7 +50,6 @@ data Dims =
 
 data RHS = 
     RHS  Term
-  | GuardedBlock Formula  [Stmt]
   deriving (Show, Eq)
 
 data Formula = 
@@ -66,7 +65,10 @@ data Formula =
   | In Term  Term
   | T 
   | F 
-  | Mult Term  Term
+  deriving (Show, Eq)
+
+data Term = 
+    Mult Term  Term
   | Div Term  Term
   | Pow Term  Term
   | Plus Term  Term
@@ -81,7 +83,6 @@ data Formula =
 data Spec = 
     Index  Term 
   | Field  String
-  | C String
   deriving (Show, Eq)
 
 

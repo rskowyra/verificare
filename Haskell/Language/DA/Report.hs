@@ -21,15 +21,15 @@ instance R.ToReport Decl where
     
 instance R.ToReport ActionDef where
   report x = case x of
-    ActionDef v1 v3 v4 -> R.Span [] [] $ [R.key "action", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.report v3], R.BlockIndent [] [] $ [R.report v4]]
+    ActionDef v1 v3 v4 -> R.Span [] [] $ [R.key "action", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4]]
     
 instance R.ToReport Preconditions where
   report x = case x of
-    Preconditions  -> R.Span [] [] $ [R.key "pre", R.key ":", R.key "`>>[Formula]<<"]
+    Preconditions v2 -> R.Span [] [] $ [R.key "pre", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     
 instance R.ToReport Postconditions where
   report x = case x of
-    Postconditions  -> R.Span [] [] $ [R.key "post", R.key ":", R.key "`>>[Postcondition]<<"]
+    Postconditions v2 -> R.Span [] [] $ [R.key "post", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     
 instance R.ToReport Postcondition where
   report x = case x of
@@ -55,7 +55,6 @@ instance R.ToReport Dims where
 instance R.ToReport RHS where
   report x = case x of
     RHS v1 -> R.Span [] [] $ [R.key "=", R.report v1]
-    GuardedBlock v0 v2 -> R.Span [] [] $ [R.report v0, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     
 instance R.ToReport Formula where
   report x = case x of
@@ -71,6 +70,9 @@ instance R.ToReport Formula where
     In v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
     T  -> R.Span [] [] $ [R.key "true"]
     F  -> R.Span [] [] $ [R.key "false"]
+    
+instance R.ToReport Term where
+  report x = case x of
     Mult v0 v2 -> R.Span [] [] $ [R.report v0, R.key "*", R.report v2]
     Div v0 v2 -> R.Span [] [] $ [R.report v0, R.key "/", R.report v2]
     Pow v0 v2 -> R.Span [] [] $ [R.report v0, R.key "^", R.report v2]
@@ -86,7 +88,6 @@ instance R.ToReport Spec where
   report x = case x of
     Index v1 -> R.Span [] [] $ [R.key "[", R.report v1, R.key "]"]
     Field v1 -> R.Span [] [] $ [R.key ".", R.var v1]
-    C v0 -> R.Span [] [] $ [R.Text v0]
     
 
 --eof
