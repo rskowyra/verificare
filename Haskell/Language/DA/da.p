@@ -1,10 +1,30 @@
 
 Root ::=
-  Root | `[Host]
+  Root | `[DA]
 
-Host ::=
-  Host | host `var : `>>([Decl])<< `>>[Stmt]<<
+DA ::=
+  DA | da `var : `>>[Decl]<< `>>[ActionDef]<< `>>[Formula]<<
 
+Decl ::=
+    Decl | `Ty `var `(RHS)
+
+ActionDef ::=
+   ActionDef | action `var : `>>(Preconditions)<< `>>(Postconditions)<<
+
+Preconditions ::=
+   Preconditions | pre : ``>>[Formula]<<
+
+Postconditions ::=
+   Postconditions | post : ``>>[Postcondition]<<
+
+Postcondition ::=
+     Constraint | `Formula
+         Assign | `var := `Term
+     Invocation | `var . `var ( `([Exp/,]) )
+
+Exp ::=
+      Var | `var
+    Const | `flag
 Ty ::=
     TyInt | int
     TySet | set < `Ty >
@@ -13,21 +33,9 @@ Ty ::=
 Dims ::=
    Dims | ^ `#
 
-Decl ::=
-    Decl | `Ty `var `(RHS)
-
 RHS ::=
     RHS | = `Term
-
-Stmt ::=
-    Skip | skip
-  Action | `var . `var ( `([Constant/,]) )
-  Assign | `var := `Term
-  Select | select : `>>[GuardedBlock]<<
-    Loop | loop : `>>[Stmt]<<
-      If | if `Formula : `>>[Stmt]<<
-
-GuardedBlock ::=
+Block ::=
   GuardedBlock | `Formula : `>>[Stmt]<<
 
 Formula ::=
@@ -45,7 +53,6 @@ Formula ::=
      In | `Term in `Term
       T | true
       F | false
-
 Term ::=
    Mult | `Term * `Term
     Div | `Term / `Term
@@ -64,6 +71,5 @@ Term ::=
 Spec ::=
   Index | [ `Term ]
   Field | . `var
-
 Constant ::=
       C | `flag

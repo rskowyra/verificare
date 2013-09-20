@@ -11,9 +11,36 @@ instance R.ToReport Root where
   report x = case x of
     Root v0 -> R.Span [] [] $ [R.report v0]
     
-instance R.ToReport Host where
+instance R.ToReport DA where
   report x = case x of
-    Host v1 v3 v4 -> R.Span [] [] $ [R.key "host", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4]]
+    DA v1 v3 v4 v5 -> R.Span [] [] $ [R.key "da", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v5]]
+    
+instance R.ToReport Decl where
+  report x = case x of
+    Decl v0 v1 v2 -> R.Span [] [] $ [R.report v0, R.var v1, R.report v2]
+    
+instance R.ToReport ActionDef where
+  report x = case x of
+    ActionDef v1 v3 v4 -> R.Span [] [] $ [R.key "action", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.report v3], R.BlockIndent [] [] $ [R.report v4]]
+    
+instance R.ToReport Preconditions where
+  report x = case x of
+    Preconditions  -> R.Span [] [] $ [R.key "pre", R.key ":", R.key "`>>[Formula]<<"]
+    
+instance R.ToReport Postconditions where
+  report x = case x of
+    Postconditions  -> R.Span [] [] $ [R.key "post", R.key ":", R.key "`>>[Postcondition]<<"]
+    
+instance R.ToReport Postcondition where
+  report x = case x of
+    Constraint v0 -> R.Span [] [] $ [R.report v0]
+    Assign v0 v2 -> R.Span [] [] $ [R.var v0, R.key ":=", R.report v2]
+    Invocation v0 v2 v4 -> R.Span [] [] $ [R.var v0, R.key ".", R.var v2, R.key "(", R.report v4, R.key ")"]
+    
+instance R.ToReport Exp where
+  report x = case x of
+    Var v0 -> R.Span [] [] $ [R.var v0]
+    Const v0 -> R.Span [] [] $ [R.Text v0]
     
 instance R.ToReport Ty where
   report x = case x of
@@ -25,25 +52,9 @@ instance R.ToReport Dims where
   report x = case x of
     Dims v1 -> R.Span [] [] $ [R.key "^", R.lit (show v1)]
     
-instance R.ToReport Decl where
-  report x = case x of
-    Decl v0 v1 v2 -> R.Span [] [] $ [R.report v0, R.var v1, R.report v2]
-    
 instance R.ToReport RHS where
   report x = case x of
     RHS v1 -> R.Span [] [] $ [R.key "=", R.report v1]
-    
-instance R.ToReport Stmt where
-  report x = case x of
-    Skip  -> R.Span [] [] $ [R.key "skip"]
-    Action v0 v2 v4 -> R.Span [] [] $ [R.var v0, R.key ".", R.var v2, R.key "(", R.report v4, R.key ")"]
-    Assign v0 v2 -> R.Span [] [] $ [R.var v0, R.key ":=", R.report v2]
-    Select v2 -> R.Span [] [] $ [R.key "select", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
-    Loop v2 -> R.Span [] [] $ [R.key "loop", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
-    If v1 v3 -> R.Span [] [] $ [R.key "if", R.report v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3]]
-    
-instance R.ToReport GuardedBlock where
-  report x = case x of
     GuardedBlock v0 v2 -> R.Span [] [] $ [R.report v0, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     
 instance R.ToReport Formula where
@@ -60,9 +71,6 @@ instance R.ToReport Formula where
     In v0 v2 -> R.Span [] [] $ [R.report v0, R.key "in", R.report v2]
     T  -> R.Span [] [] $ [R.key "true"]
     F  -> R.Span [] [] $ [R.key "false"]
-    
-instance R.ToReport Term where
-  report x = case x of
     Mult v0 v2 -> R.Span [] [] $ [R.report v0, R.key "*", R.report v2]
     Div v0 v2 -> R.Span [] [] $ [R.report v0, R.key "/", R.report v2]
     Pow v0 v2 -> R.Span [] [] $ [R.report v0, R.key "^", R.report v2]
@@ -78,9 +86,6 @@ instance R.ToReport Spec where
   report x = case x of
     Index v1 -> R.Span [] [] $ [R.key "[", R.report v1, R.key "]"]
     Field v1 -> R.Span [] [] $ [R.key ".", R.var v1]
-    
-instance R.ToReport Constant where
-  report x = case x of
     C v0 -> R.Span [] [] $ [R.Text v0]
     
 

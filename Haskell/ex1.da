@@ -1,4 +1,14 @@
 
+da test:
+   int a
+   action increment:
+      pre:
+         a > 0
+      post:
+         a := a + 1
+         a > 1
+
+
 
 host Client :
   skip

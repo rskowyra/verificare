@@ -4,11 +4,38 @@ module Language.DA.AbstractSyntax
   where
 
 data Root = 
-    Root [Host]
+    Root [DA]
   deriving (Show, Eq)
 
-data Host = 
-    Host  String  [Decl] [Stmt]
+data DA = 
+    DA  String  [Decl] [ActionDef] [Formula]
+  deriving (Show, Eq)
+
+data Decl = 
+    Decl Ty String (Maybe RHS)
+  deriving (Show, Eq)
+
+data ActionDef = 
+    ActionDef  String  (Maybe Preconditions) (Maybe Postconditions)
+  deriving (Show, Eq)
+
+data Preconditions = 
+    Preconditions   
+  deriving (Show, Eq)
+
+data Postconditions = 
+    Postconditions   
+  deriving (Show, Eq)
+
+data Postcondition = 
+    Constraint Formula
+  | Assign String  Term
+  | Invocation String  String  [Exp] 
+  deriving (Show, Eq)
+
+data Exp = 
+    Var String
+  | Const String
   deriving (Show, Eq)
 
 data Ty = 
@@ -21,25 +48,9 @@ data Dims =
     Dims  Integer
   deriving (Show, Eq)
 
-data Decl = 
-    Decl Ty String (Maybe RHS)
-  deriving (Show, Eq)
-
 data RHS = 
     RHS  Term
-  deriving (Show, Eq)
-
-data Stmt = 
-    Skip 
-  | Action String  String  [Constant] 
-  | Assign String  Term
-  | Select   [GuardedBlock]
-  | Loop   [Stmt]
-  | If  Formula  [Stmt]
-  deriving (Show, Eq)
-
-data GuardedBlock = 
-    GuardedBlock Formula  [Stmt]
+  | GuardedBlock Formula  [Stmt]
   deriving (Show, Eq)
 
 data Formula = 
@@ -55,10 +66,7 @@ data Formula =
   | In Term  Term
   | T 
   | F 
-  deriving (Show, Eq)
-
-data Term = 
-    Mult Term  Term
+  | Mult Term  Term
   | Div Term  Term
   | Pow Term  Term
   | Plus Term  Term
@@ -73,10 +81,7 @@ data Term =
 data Spec = 
     Index  Term 
   | Field  String
-  deriving (Show, Eq)
-
-data Constant = 
-    C String
+  | C String
   deriving (Show, Eq)
 
 
