@@ -9,7 +9,11 @@ data Root =
 
 data GlobalDecl = 
     Typedef  String  [Decl] 
-  | GlobalDecl Decl
+  | MType    [MTypeConst]  
+  deriving (Show, Eq)
+
+data MTypeConst = 
+    MTypeConst String
   deriving (Show, Eq)
 
 data Init = 

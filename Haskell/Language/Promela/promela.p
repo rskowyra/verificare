@@ -4,7 +4,10 @@ Root ::=
 
 GlobalDecl ::=
      Typedef | typedef `var { `>[Decl]< }
-  GlobalDecl | `Decl
+       MType | mtype = { `[MTypeConst/,] } ;
+
+MTypeConst ::=
+   MTypeConst | `var
 
 Init ::=
   Init | init
@@ -16,7 +19,7 @@ Arg ::=
     Arg | `Ty `var
 
 Decl ::=
-  Decl | `Ty `var `(Size) `(RHS) ;
+   Decl | `Ty `var `(Size) `(RHS) ;
 
 Size ::=
   Size | [ `Term ]

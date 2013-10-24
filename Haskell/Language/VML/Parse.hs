@@ -38,9 +38,9 @@ langDef = PL.javaStyle
   { PL.identStart        = oneOf "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkmlnopqrstuvwxyz_" -- Only lowercase.
   , PL.identLetter       = alphaNum <|> oneOf "_'"
   , PL.opStart           = PL.opLetter langDef
-  , PL.opLetter          = oneOf "-*/^+:<>=.!"
-  , PL.reservedOpNames   = ["not","-","and","or","*","/","^","+",":","<",">","=",".",":=","==","!=","<=",">="]
-  , PL.reservedNames     = ["host","int","set","array","skip","(",")","select","loop","if","in","true","false","[","]","{","}"]
+  , PL.opLetter          = oneOf "not-adr*/^+"
+  , PL.reservedOpNames   = ["not","-","and","or","*","/","^","+"]
+  , PL.reservedNames     = ["host",":","int","[",",","]","set","<",">","array","=",".","(",")","block","skip",":=","select","loop","for","in","if","==","!=","<=",">=","true","false","{","}","@","|"]
   , PL.commentLine       = "#"
   }
 
@@ -75,49 +75,63 @@ root = do { whiteSpace ; r <- pRoot ; eof ; return r }
 
 pRoot = do {v0 <- (many1 (pHost)); return $ Root v0}
   
-pHost = do {res "host"; v1 <- identifier; rO ":"; v3 <- (PI.indented >> block0 (pDecl)); v4 <- (PI.indented >> PI.block (pStmt)); return $ Host v1 v3 v4}
+pHost = do {res "host"; v1 <- identifier; res ":"; v3 <- (PI.indented >> block0 (pDecl)); v4 <- (PI.indented >> PI.block (pStmt)); return $ Host v1 v3 v4}
   
 pTy =
-       do {res "int"; return $ TyInt }
-  <?|> do {res "set"; rO "<"; v2 <- pTy; rO ">"; return $ TySet v2}
-  <?|> do {res "array"; rO "<"; v2 <- pTy; rO ">"; v4 <- (may (pDims)); return $ TyArray v2 v4}
+       do {res "int"; res "["; v2 <- natural; res ","; v4 <- natural; res "]"; return $ TyIntBounded v2 v4}
+  <?|> do {res "int"; return $ TyInt }
+  <?|> do {res "set"; res "<"; v2 <- pTy; res ">"; return $ TySet v2}
+  <?|> do {res "array"; res "<"; v2 <- pTy; res ">"; v4 <- (may (pDims)); return $ TyArray v2 v4}
   
-pDims = do {rO "^"; v1 <- natural; return $ Dims v1}
+pDims = do {res "^"; v1 <- natural; return $ Dims v1}
   
 pDecl = do {v0 <- pTy; v1 <- identifier; v2 <- (may (pRHS)); return $ Decl v0 v1 v2}
   
-pRHS = do {rO "="; v1 <- pTerm; return $ RHS v1}
+pRHS = do {res "="; v1 <- pTerm; return $ RHS v1}
+  
+pAssignRHS =
+       do {v0 <- pTerm; return $ StmtRHSTerm v0}
+  <?|> do {v0 <- pAction; return $ StmtRHSAction v0}
+  
+pAction = do {v0 <- (may (pBlock)); v1 <- identifier; res "."; v3 <- identifier; res "("; v5 <- (sepBy pConstant (res ",")); res ")"; return $ Action v0 v1 v3 v5}
+  
+pBlock = do {res "block"; return $ Block }
   
 pStmt =
        do {res "skip"; return $ Skip }
-  <?|> do {v0 <- identifier; rO "."; v2 <- identifier; res "("; v4 <- (sepBy pConstant (rO ",")); res ")"; return $ Action v0 v2 v4}
-  <?|> do {v0 <- identifier; rO ":="; v2 <- pTerm; return $ Assign v0 v2}
-  <?|> do {res "select"; rO ":"; v2 <- (PI.indented >> PI.block (pGuardedBlock)); return $ Select v2}
-  <?|> do {res "loop"; rO ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ Loop v2}
-  <?|> do {res "if"; v1 <- pFormula; rO ":"; v3 <- (PI.indented >> PI.block (pStmt)); return $ If v1 v3}
+  <?|> do {v0 <- pAction; return $ Invoke v0}
+  <?|> do {v0 <- identifier; res ":="; v2 <- pAssignRHS; return $ Assign v0 v2}
+  <?|> do {res "select"; res ":"; v2 <- (PI.indented >> PI.block (pGuardedBlock)); return $ Select v2}
+  <?|> do {res "loop"; res ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ Loop v2}
+  <?|> do {res "for"; v1 <- pTerm; res "in"; v3 <- pTerm; res ":"; v5 <- (PI.indented >> PI.block (pStmt)); return $ For v1 v3 v5}
+  <?|> do {res "if"; v1 <- pFormula; res ":"; v3 <- (PI.indented >> PI.block (pStmt)); return $ If v1 v3}
   
-pGuardedBlock = do {v0 <- pFormula; rO ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ GuardedBlock v0 v2}
+pGuardedBlock = do {v0 <- pFormula; res ":"; v2 <- (PI.indented >> PI.block (pStmt)); return $ GuardedBlock v0 v2}
   
-pFormula = PE.buildExpressionParser [[prefix "not" Not],[binary "and" And PE.AssocLeft,binary "or" Or PE.AssocLeft]] (
-      do {v0 <- pTerm; rO "=="; v2 <- pTerm; return $ Eq v0 v2}
-  <?|> do {v0 <- pTerm; rO "!="; v2 <- pTerm; return $ Neq v0 v2}
-  <?|> do {v0 <- pTerm; rO "<"; v2 <- pTerm; return $ Lt v0 v2}
-  <?|> do {v0 <- pTerm; rO "<="; v2 <- pTerm; return $ Leq v0 v2}
-  <?|> do {v0 <- pTerm; rO ">"; v2 <- pTerm; return $ Gt v0 v2}
-  <?|> do {v0 <- pTerm; rO ">="; v2 <- pTerm; return $ Geq v0 v2}
+pFormula =
+       do {res "not"; v1 <- pFormula; return $ Not v1}
+  <?|> do {v0 <- pFormula; res "and"; v2 <- pFormula; return $ And v0 v2}
+  <?|> do {v0 <- pFormula; res "or"; v2 <- pFormula; return $ Or v0 v2}
+  <?|> do {v0 <- pTerm; res "=="; v2 <- pTerm; return $ Eq v0 v2}
+  <?|> do {v0 <- pTerm; res "!="; v2 <- pTerm; return $ Neq v0 v2}
+  <?|> do {v0 <- pTerm; res "<"; v2 <- pTerm; return $ Lt v0 v2}
+  <?|> do {v0 <- pTerm; res "<="; v2 <- pTerm; return $ Leq v0 v2}
+  <?|> do {v0 <- pTerm; res ">"; v2 <- pTerm; return $ Gt v0 v2}
+  <?|> do {v0 <- pTerm; res ">="; v2 <- pTerm; return $ Geq v0 v2}
   <?|> do {v0 <- pTerm; res "in"; v2 <- pTerm; return $ In v0 v2}
   <?|> do {res "true"; return $ T }
   <?|> do {res "false"; return $ F }
-  )
+  
 pTerm = PE.buildExpressionParser [[binary "*" Mult PE.AssocLeft,binary "/" Div PE.AssocLeft,binary "^" Pow PE.AssocLeft],[binary "+" Plus PE.AssocLeft,binary "-" Minus PE.AssocLeft],[prefix "-" Neg]] (
-      do {res "["; v1 <- (sepBy pTerm (rO ",")); res "]"; return $ Array v1}
-  <?|> do {res "{"; v1 <- (sepBy pTerm (rO ",")); res "}"; return $ Set v1}
+      do {res "["; v1 <- (sepBy pTerm (res ",")); res "]"; return $ Array v1}
+  <?|> do {res "{"; v1 <- (sepBy pTerm (res ",")); res "}"; return $ Set v1}
+  <?|> do {res "@"; res "{"; v2 <- pTerm; res "|"; v4 <- (sepBy1 pFormula (res ",")); res "}"; return $ Comp v2 v4}
   <?|> do {v0 <- identifier; v1 <- (many (pSpec)); return $ V v0 v1}
   <?|> do {v0 <- natural; return $ N v0}
   )
 pSpec =
        do {res "["; v1 <- pTerm; res "]"; return $ Index v1}
-  <?|> do {rO "."; v1 <- identifier; return $ Field v1}
+  <?|> do {res "."; v1 <- identifier; return $ Field v1}
   
 pConstant = do {v0 <- flag; return $ C v0}
   

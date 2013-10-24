@@ -40,7 +40,7 @@ langDef = PL.javaStyle
   , PL.opStart           = PL.opLetter langDef
   , PL.opLetter          = oneOf "not-adr*/^+"
   , PL.reservedOpNames   = ["not","-","and","or","*","/","^","+"]
-  , PL.reservedNames     = ["da",":","action","pre","post",":=",".","(",")","int","set","<",">","array","=","==","!=","<=",">=","in","true","false","[","]","{","}"]
+  , PL.reservedNames     = ["da",":","action","pre","post","return",":=",".","(",")","int","set","<",">","array","=","==","!=","<=",">=","in","true","false","[","]","{","}"]
   , PL.commentLine       = "#"
   }
 
@@ -79,11 +79,13 @@ pDA = do {res "da"; v1 <- identifier; res ":"; v3 <- (PI.indented >> PI.block (p
   
 pDecl = do {v0 <- pTy; v1 <- identifier; v2 <- (may (pRHS)); return $ Decl v0 v1 v2}
   
-pActionDef = do {res "action"; v1 <- identifier; res ":"; v3 <- (PI.indented >> PI.block (pPreconditions)); v4 <- (PI.indented >> PI.block (pPostconditions)); return $ ActionDef v1 v3 v4}
+pActionDef = do {res "action"; v1 <- identifier; res ":"; v3 <- (PI.indented >> block0 (pPreconditions)); v4 <- (PI.indented >> block0 (pPostconditions)); v5 <- (PI.indented >> block0 (pReturn)); return $ ActionDef v1 v3 v4 v5}
   
 pPreconditions = do {res "pre"; res ":"; v2 <- (PI.indented >> PI.block (pFormula)); return $ Preconditions v2}
   
 pPostconditions = do {res "post"; res ":"; v2 <- (PI.indented >> PI.block (pPostcondition)); return $ Postconditions v2}
+  
+pReturn = do {res "return"; res ":"; v2 <- (PI.indented >> PI.block (pExp)); return $ Return v2}
   
 pPostcondition =
        do {v0 <- pFormula; return $ Constraint v0}

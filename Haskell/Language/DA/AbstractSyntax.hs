@@ -16,7 +16,7 @@ data Decl =
   deriving (Show, Eq)
 
 data ActionDef = 
-    ActionDef  String  [Preconditions] [Postconditions]
+    ActionDef  String  [Preconditions] [Postconditions] [Return]
   deriving (Show, Eq)
 
 data Preconditions = 
@@ -25,6 +25,10 @@ data Preconditions =
 
 data Postconditions = 
     Postconditions   [Postcondition]
+  deriving (Show, Eq)
+
+data Return = 
+    Return   [Exp]
   deriving (Show, Eq)
 
 data Postcondition = 

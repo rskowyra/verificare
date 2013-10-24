@@ -1,9 +1,13 @@
 
-da test:
-   int a
-   action increment:
-      pre:
-         a > 0
+da queue:
+   array< int > msgs
+   action push:
       post:
-         a := a + 1
-         a > 1
+         msgs > 0
+      return: msgs
+   action pull:
+      post:
+         msgs > 0
+      return: msgs
+      
+   a > b  # need forall/exists

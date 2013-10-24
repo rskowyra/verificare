@@ -6,9 +6,10 @@ Host ::=
   Host | host `var : `>>([Decl])<< `>>[Stmt]<<
 
 Ty ::=
-    TyInt | int
-    TySet | set < `Ty >
-  TyArray | array < `Ty > `(Dims)
+  TyIntBounded | int [ `# , `# ]
+         TyInt | int
+         TySet | set < `Ty >
+       TyArray | array < `Ty > `(Dims)
 
 Dims ::=
    Dims | ^ `#
@@ -19,12 +20,23 @@ Decl ::=
 RHS ::=
     RHS | = `Term
 
+AssignRHS ::=
+      StmtRHSTerm | `Term
+    StmtRHSAction | `Action
+
+Action ::=
+    Action | `(Block) `var . `var ( `([Constant/,]) )
+
+Block ::=
+    Block | block
+
 Stmt ::=
     Skip | skip
-  Action | `var . `var ( `([Constant/,]) )
-  Assign | `var := `Term
+  Invoke | `Action
+  Assign | `var := `AssignRHS
   Select | select : `>>[GuardedBlock]<<
     Loop | loop : `>>[Stmt]<<
+     For | for `Term in `Term : `>>[Stmt]<<
       If | if `Formula : `>>[Stmt]<<
 
 GuardedBlock ::=
@@ -58,6 +70,7 @@ Term ::=
         ^
   Array | [ `([Term/,]) ]
     Set | { `([Term/,]) }
+   Comp | @ { `Term | `[Formula/,] }
       V | `var `([Spec])
       N | `#
 

@@ -16,8 +16,7 @@ Library
                    Language.VML.Parse,
                    Language.Promela.AbstractSyntax,
                    Language.Promela.Report,
-                   Language.Promela.Parse,
-                   Verificare.VMLToPromela
+                   Language.Promela.Parse
   Build-Depends:   base >= 3 && < 5, MissingH, transformers, 
                    split, parsec, indents,
                    compilation, staticanalysis, ascetic, uxadt, richreports, imparse

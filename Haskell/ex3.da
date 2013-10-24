@@ -1,0 +1,9 @@
+
+da test test1:
+   int a
+   action increment:
+      pre:
+         a > 0
+      post:
+         a := a + 1
+         a > 1

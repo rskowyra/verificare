@@ -7,15 +7,32 @@ host Client :
 
 host Server :
   int x = 5
-  array <int> ^ 4  a
-  array <int> ^ 3  b
-  array <int> ^ 2  c
-  array <int> ^ 1  d
-  array <int> e
+  int [ 2 , 4 ] x = 2
+  array < int > ^ 4  a
+  array < int > ^ 3  b
+  array < int > ^ 2  c
+  array < int > ^ 1  d
+  array < int > e
 
   skip
   skip
-  network.end()
+  
+  x := block network . end ( )  
+  block network . end()
+  x := 4
+
+  for x in y:
+    skip
+
+
+  x := @ { y | y > 10 }
+    
+/*
+
+
+
+
+network.end()
   loop:
     skip
     skip
@@ -33,14 +50,19 @@ host Server :
       x <= 9:
         skip
         skip
+        
+
       
   skip
-  
 
 
-  
-  
-/*
+
+
+
+
+
+
+
   network.start(MO, REQUEST, CLIENT, SERVER)
   network.originate(MO, REQUEST, CLIENT, SERVER)
   network.end(MO, REQUEST, CLIENT, SERVER)

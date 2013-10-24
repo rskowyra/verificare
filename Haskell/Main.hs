@@ -29,7 +29,8 @@ import qualified Language.DA.Report as DA
 import qualified Language.Promela.AbstractSyntax as P
 import qualified Language.Promela.Parse as P (parseString)
 import qualified Language.Promela.Report as P
-import qualified Verificare.VMLToPromela as VToP (root)
+--import qualified Verificare.VMLToPromela as VToP (root)
+import qualified Verificare.DAToPromela as DAToP (root)
 
 ----------------------------------------------------------------
 -- The target inputs and outputs, as specified by the user's
@@ -78,8 +79,8 @@ handleFile f = case f of
            Nothing -> R.Row [R.Field (R.Text "not parsed"), R.Field (R.Conc [])]
            Just root ->
              R.Row [
-               R.Field (R.report root),
-               R.Field (R.report $ VToP.root root)
+               R.Field (R.report root) --,
+               -- R.Field (R.report $ VToP.root root)
              ]
      }
   DA fileName ->
@@ -87,7 +88,11 @@ handleFile f = case f of
        ; root <- parse DA.parseString txt
        ; return $ case root of
            Nothing -> R.Row [R.Field (R.Text "not parsed"), R.Field (R.Conc [])]
-           Just root -> R.Row [R.Field (R.report root), R.Field (R.Conc [])]
+           Just root ->
+             R.Row [
+               R.Field (R.report root) --,
+               -- R.Field (R.report $ DAToP.root root)
+             ]
      }
 
 output :: [Flag] -> [File] -> IO ()

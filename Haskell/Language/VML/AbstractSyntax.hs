@@ -12,7 +12,8 @@ data Host =
   deriving (Show, Eq)
 
 data Ty = 
-    TyInt 
+    TyIntBounded   Integer  Integer 
+  | TyInt 
   | TySet   Ty 
   | TyArray   Ty  (Maybe Dims)
   deriving (Show, Eq)
@@ -29,12 +30,26 @@ data RHS =
     RHS  Term
   deriving (Show, Eq)
 
+data AssignRHS = 
+    StmtRHSTerm Term
+  | StmtRHSAction Action
+  deriving (Show, Eq)
+
+data Action = 
+    Action (Maybe Block) String  String  [Constant] 
+  deriving (Show, Eq)
+
+data Block = 
+    Block 
+  deriving (Show, Eq)
+
 data Stmt = 
     Skip 
-  | Action String  String  [Constant] 
-  | Assign String  Term
+  | Invoke Action
+  | Assign String  AssignRHS
   | Select   [GuardedBlock]
   | Loop   [Stmt]
+  | For  Term  Term  [Stmt]
   | If  Formula  [Stmt]
   deriving (Show, Eq)
 
@@ -66,6 +81,7 @@ data Term =
   | Neg  Term
   | Array  [Term] 
   | Set  [Term] 
+  | Comp   Term  [Formula] 
   | V String [Spec]
   | N Integer
   deriving (Show, Eq)

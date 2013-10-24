@@ -8,13 +8,16 @@ Decl ::=
     Decl | `Ty `var `(RHS)
 
 ActionDef ::=
-   ActionDef | action `var : `>>[Preconditions]<< `>>[Postconditions]<<
+   ActionDef | action `var : `>>([Preconditions])<< `>>([Postconditions])<< `>>([Return])<<
 
 Preconditions ::=
    Preconditions | pre : `>>[Formula]<<
 
 Postconditions ::=
    Postconditions | post : `>>[Postcondition]<<
+
+Return ::=
+   Return | return : `>>[Exp]<<
 
 Postcondition ::=
      Constraint | `Formula

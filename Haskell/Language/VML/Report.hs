@@ -17,6 +17,7 @@ instance R.ToReport Host where
     
 instance R.ToReport Ty where
   report x = case x of
+    TyIntBounded v2 v4 -> R.Span [] [] $ [R.key "int", R.key "[", R.lit (show v2), R.key ",", R.lit (show v4), R.key "]"]
     TyInt  -> R.Span [] [] $ [R.key "int"]
     TySet v2 -> R.Span [] [] $ [R.key "set", R.key "<", R.report v2, R.key ">"]
     TyArray v2 v4 -> R.Span [] [] $ [R.key "array", R.key "<", R.report v2, R.key ">", R.report v4]
@@ -33,13 +34,27 @@ instance R.ToReport RHS where
   report x = case x of
     RHS v1 -> R.Span [] [] $ [R.key "=", R.report v1]
     
+instance R.ToReport AssignRHS where
+  report x = case x of
+    StmtRHSTerm v0 -> R.Span [] [] $ [R.report v0]
+    StmtRHSAction v0 -> R.Span [] [] $ [R.report v0]
+    
+instance R.ToReport Action where
+  report x = case x of
+    Action v0 v1 v3 v5 -> R.Span [] [] $ [R.report v0, R.var v1, R.key ".", R.var v3, R.key "(", R.report v5, R.key ")"]
+    
+instance R.ToReport Block where
+  report x = case x of
+    Block  -> R.Span [] [] $ [R.key "block"]
+    
 instance R.ToReport Stmt where
   report x = case x of
     Skip  -> R.Span [] [] $ [R.key "skip"]
-    Action v0 v2 v4 -> R.Span [] [] $ [R.var v0, R.key ".", R.var v2, R.key "(", R.report v4, R.key ")"]
+    Invoke v0 -> R.Span [] [] $ [R.report v0]
     Assign v0 v2 -> R.Span [] [] $ [R.var v0, R.key ":=", R.report v2]
     Select v2 -> R.Span [] [] $ [R.key "select", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     Loop v2 -> R.Span [] [] $ [R.key "loop", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
+    For v1 v3 v5 -> R.Span [] [] $ [R.key "for", R.report v1, R.key "in", R.report v3, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v5]]
     If v1 v3 -> R.Span [] [] $ [R.key "if", R.report v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3]]
     
 instance R.ToReport GuardedBlock where
@@ -71,6 +86,7 @@ instance R.ToReport Term where
     Neg v1 -> R.Span [] [] $ [R.key "-", R.report v1]
     Array v1 -> R.Span [] [] $ [R.key "[", R.report v1, R.key "]"]
     Set v1 -> R.Span [] [] $ [R.key "{", R.report v1, R.key "}"]
+    Comp v2 v4 -> R.Span [] [] $ [R.key "@", R.key "{", R.report v2, R.key "|", R.report v4, R.key "}"]
     V v0 v1 -> R.Span [] [] $ [R.var v0, R.report v1]
     N v0 -> R.Span [] [] $ [R.lit (show v0)]
     

@@ -14,7 +14,11 @@ instance R.ToReport Root where
 instance R.ToReport GlobalDecl where
   report x = case x of
     Typedef v1 v3 -> R.Span [] [] $ [R.key "typedef", R.var v1, R.key "{", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.key "}"]
-    GlobalDecl v0 -> R.Span [] [] $ [R.report v0]
+    MType v3 -> R.Span [] [] $ [R.key "mtype", R.key "=", R.key "{", R.report v3, R.key "}", R.key ";"]
+    
+instance R.ToReport MTypeConst where
+  report x = case x of
+    MTypeConst v0 -> R.Span [] [] $ [R.var v0]
     
 instance R.ToReport Init where
   report x = case x of

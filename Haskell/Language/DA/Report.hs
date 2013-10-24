@@ -21,7 +21,7 @@ instance R.ToReport Decl where
     
 instance R.ToReport ActionDef where
   report x = case x of
-    ActionDef v1 v3 v4 -> R.Span [] [] $ [R.key "action", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4]]
+    ActionDef v1 v3 v4 v5 -> R.Span [] [] $ [R.key "action", R.var v1, R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v3], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v4], R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v5]]
     
 instance R.ToReport Preconditions where
   report x = case x of
@@ -30,6 +30,10 @@ instance R.ToReport Preconditions where
 instance R.ToReport Postconditions where
   report x = case x of
     Postconditions v2 -> R.Span [] [] $ [R.key "post", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
+    
+instance R.ToReport Return where
+  report x = case x of
+    Return v2 -> R.Span [] [] $ [R.key "return", R.key ":", R.BlockIndent [] [] $ [R.Line [] [R.report vx] | vx <- v2]]
     
 instance R.ToReport Postcondition where
   report x = case x of
